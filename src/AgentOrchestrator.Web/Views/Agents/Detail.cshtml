@@ -1,0 +1,163 @@
+@model AgentOrchestrator.Web.Models.AgentViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Agents</a>
+</div>
+
+<div class="row">
+    <!-- Left column: Avatar + Status -->
+    <div class="col-md-3 mb-3 text-center">
+        <img src="@Url.Action("Avatar", "Agents", new { id = Model.Id })"
+             alt="@Model.Name" width="160" height="160" class="rounded mb-3" />
+
+        <!-- Status -->
+        <div class="mb-3">
+            @if (Model.IsBusy)
+            {
+                if (Model.IsBlocked)
+                {
+                    <span class="badge bg-warning text-dark fs-6">Blocked</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger fs-6">Busy</span>
+                }
+            }
+            else
+            {
+                <span class="badge bg-secondary fs-6">Idle</span>
+            }
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-grid gap-2">
+            <a asp-action="Threads" asp-route-id="@Model.Id" class="btn btn-primary">Communication</a>
+            @if (Model.IsDeveloper)
+            {
+                <a asp-action="Workspace" asp-route-id="@Model.Id" class="btn btn-outline-success">&lt;/&gt; Workspace</a>
+            }
+            <a asp-action="Compose" asp-route-agentId="@Model.Id" class="btn btn-outline-secondary">Send Message</a>
+        </div>
+    </div>
+
+    <!-- Right column: Agent details -->
+    <div class="col-md-9">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="mb-0">
+                    @Model.Name
+                    @if (Model.IsCeo)
+                    {
+                        <span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;">CEO</span>
+                    }
+                    @if (Model.IsDeveloper)
+                    {
+                        <span class="badge bg-success ms-1" style="font-size:0.7rem;">&lt;/&gt; Developer</span>
+                    }
+                </h2>
+                <h5 class="text-muted mt-1">@Model.JobTitle</h5>
+            </div>
+        </div>
+
+        <!-- Current Task -->
+        @if (Model.IsBusy && !string.IsNullOrEmpty(Model.CurrentTask))
+        {
+            <div class="card mb-3 @(Model.IsBlocked ? "border-warning" : "border-danger")">
+                <div class="card-header @(Model.IsBlocked ? "bg-warning text-dark" : "bg-danger text-white") py-2">
+                    <strong>
+                        @if (Model.IsBlocked)
+                        {
+                            <span class="spinner-grow spinner-grow-sm me-1" style="width:0.7rem;height:0.7rem;"></span>
+                            @:Blocked — waiting on @Model.BlockedByAgentName
+                        }
+                        else
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" style="width:0.7rem;height:0.7rem;"></span>
+                            @:Currently Working
+                        }
+                    </strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0" style="white-space: pre-wrap;">@Model.CurrentTask</p>
+                </div>
+            </div>
+        }
+
+        <!-- Persona -->
+        <div class="card mb-3">
+            <div class="card-header"><strong>Persona</strong></div>
+            <div class="card-body">
+                <p class="mb-0" style="white-space: pre-wrap;">@Model.Persona</p>
+            </div>
+        </div>
+
+        <!-- Skills -->
+        @if (Model.Skills.Any())
+        {
+            <div class="card mb-3">
+                <div class="card-header"><strong>Skills</strong></div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var skill in Model.Skills)
+                        {
+                            <span class="badge bg-info text-dark" style="font-size:0.85rem;">@skill</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Reporting Structure -->
+        <div class="card mb-3">
+            <div class="card-header"><strong>Reporting Structure</strong></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <strong class="text-muted d-block mb-1">Reports To</strong>
+                        @if (!string.IsNullOrEmpty(Model.ReportsToName))
+                        {
+                            <span>@Model.ReportsToName</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">None (top of organisation)</span>
+                        }
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <strong class="text-muted d-block mb-1">Direct Reports</strong>
+                        @if (Model.DirectReportNames.Any())
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var name in Model.DirectReportNames)
+                                {
+                                    <li>@name</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted">None</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row text-muted small">
+                    <div class="col-md-6">
+                        <strong>Agent ID:</strong> <code>@Model.Id</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created:</strong> @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

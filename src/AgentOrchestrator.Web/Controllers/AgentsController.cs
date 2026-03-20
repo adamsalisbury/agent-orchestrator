@@ -32,7 +32,17 @@ public class AgentsController : Controller
     public async Task<IActionResult> Index()
     {
         var agents = await _agentRepo.GetAllAsync();
-        return View(agents.OrderBy(a => a.Name).Select(ToViewModel).ToList());
+        return View(agents.OrderBy(a => a.Name).Select(a => ToViewModel(a, agents)).ToList());
+    }
+
+    public async Task<IActionResult> Detail(string id)
+    {
+        var agents = await _agentRepo.GetAllAsync();
+        var agent = agents.FirstOrDefault(a => a.Id == id);
+        if (agent == null)
+            return NotFound();
+
+        return View(ToViewModel(agent, agents));
     }
 
     public IActionResult Create()
@@ -162,7 +172,7 @@ public class AgentsController : Controller
         return View(new ComposeViewModel
         {
             AgentId = agentId ?? string.Empty,
-            AvailableAgents = agents.OrderBy(a => a.Name).Select(ToViewModel).ToList()
+            AvailableAgents = agents.OrderBy(a => a.Name).Select(a => ToViewModel(a)).ToList()
         });
     }
 
@@ -178,7 +188,7 @@ public class AgentsController : Controller
         if (!ModelState.IsValid)
         {
             var agents = await _agentRepo.GetAllAsync();
-            model.AvailableAgents = agents.OrderBy(a => a.Name).Select(ToViewModel).ToList();
+            model.AvailableAgents = agents.OrderBy(a => a.Name).Select(a => ToViewModel(a)).ToList();
             return View(model);
         }
 
@@ -446,7 +456,7 @@ public class AgentsController : Controller
 
     // --- Mapping ---
 
-    private static AgentViewModel ToViewModel(Agent a) => new()
+    private static AgentViewModel ToViewModel(Agent a, List<Agent>? allAgents = null) => new()
     {
         Id = a.Id,
         Name = a.Name,
@@ -458,7 +468,15 @@ public class AgentsController : Controller
         IsCeo = a.IsCeo,
         ReportsToId = a.ReportsToId,
         ReportsToName = a.ReportsToName,
-        DirectReportIds = a.DirectReportIds
+        DirectReportIds = a.DirectReportIds,
+        DirectReportNames = allAgents?
+            .Where(r => r.ReportsToId == a.Id)
+            .Select(r => $"{r.Name} ({r.JobTitle})")
+            .ToList() ?? new(),
+        IsBusy = a.IsBusy,
+        CurrentTask = a.CurrentTask,
+        BlockedByAgentId = a.BlockedByAgentId,
+        BlockedByAgentName = a.BlockedByAgentName
     };
 
     private static ThreadMessageViewModel ToMessageViewModel(ThreadMessage m) => new()

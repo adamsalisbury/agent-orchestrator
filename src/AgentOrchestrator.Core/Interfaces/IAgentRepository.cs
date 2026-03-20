@@ -10,4 +10,6 @@ public interface IAgentRepository
     Task<List<Agent>> GetAllAsync();
     Task DeleteAllAsync();
     string GetAgentWorkspacePath(string agentId);
+    Task SetCurrentTaskAsync(string agentId, string task, string? blockedByAgentId = null, string? blockedByAgentName = null);
+    Task ClearCurrentTaskAsync(string agentId);
 }

@@ -13,6 +13,12 @@ public class AgentViewModel
     public string? ReportsToId { get; set; }
     public string? ReportsToName { get; set; }
     public List<string> DirectReportIds { get; set; } = new();
+    public List<string> DirectReportNames { get; set; } = new();
+    public bool IsBusy { get; set; }
+    public string? CurrentTask { get; set; }
+    public string? BlockedByAgentId { get; set; }
+    public string? BlockedByAgentName { get; set; }
+    public bool IsBlocked => !string.IsNullOrEmpty(BlockedByAgentId);
     public string DisplayName => $"{Name} ({JobTitle})";
 }
 

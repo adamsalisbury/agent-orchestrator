@@ -72,7 +72,10 @@ public class FileAgentRepository : IAgentRepository
                 return null;
 
             var content = await File.ReadAllTextAsync(filePath);
-            return ParseAgent(content);
+            var agent = ParseAgent(content);
+            if (agent != null)
+                await LoadCurrentTask(agent);
+            return agent;
         }
         finally
         {
@@ -98,7 +101,10 @@ public class FileAgentRepository : IAgentRepository
                 var content = await File.ReadAllTextAsync(filePath);
                 var agent = ParseAgent(content);
                 if (agent != null)
+                {
+                    await LoadCurrentTask(agent);
                     agents.Add(agent);
+                }
             }
 
             // Populate DirectReportIds from ReportsToId relationships
@@ -144,6 +150,60 @@ public class FileAgentRepository : IAgentRepository
     public string GetAgentWorkspacePath(string agentId)
     {
         return Path.Combine(_baseDirectory, $"agent-{agentId}", "workspace");
+    }
+
+    public async Task SetCurrentTaskAsync(string agentId, string task, string? blockedByAgentId = null, string? blockedByAgentName = null)
+    {
+        var filePath = Path.Combine(_baseDirectory, $"agent-{agentId}", "current-task.md");
+        var blockedId = blockedByAgentId ?? "";
+        var blockedName = blockedByAgentName ?? "";
+        var content = $"---\nstatus: {(string.IsNullOrEmpty(blockedByAgentId) ? "busy" : "blocked")}\nblockedByAgentId: {blockedId}\nblockedByAgentName: {blockedName}\n---\n\n{task}";
+        await File.WriteAllTextAsync(filePath, content);
+    }
+
+    public Task ClearCurrentTaskAsync(string agentId)
+    {
+        var filePath = Path.Combine(_baseDirectory, $"agent-{agentId}", "current-task.md");
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+        return Task.CompletedTask;
+    }
+
+    private async Task LoadCurrentTask(Agent agent)
+    {
+        var taskPath = Path.Combine(_baseDirectory, $"agent-{agent.Id}", "current-task.md");
+        if (!File.Exists(taskPath))
+            return;
+
+        var content = await File.ReadAllTextAsync(taskPath);
+        if (!content.StartsWith("---"))
+            return;
+
+        var endOfFrontmatter = content.IndexOf("---", 3);
+        if (endOfFrontmatter < 0)
+            return;
+
+        var frontmatter = content[3..endOfFrontmatter].Trim();
+        var body = content[(endOfFrontmatter + 3)..].Trim();
+
+        var meta = new Dictionary<string, string>();
+        foreach (var line in frontmatter.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var colonIndex = line.IndexOf(':');
+            if (colonIndex > 0)
+            {
+                var key = line[..colonIndex].Trim();
+                var value = line[(colonIndex + 1)..].Trim();
+                meta[key] = value;
+            }
+        }
+
+        agent.IsBusy = true;
+        agent.CurrentTask = body;
+        var blockedId = meta.GetValueOrDefault("blockedByAgentId", "");
+        agent.BlockedByAgentId = string.IsNullOrWhiteSpace(blockedId) ? null : blockedId;
+        var blockedName = meta.GetValueOrDefault("blockedByAgentName", "");
+        agent.BlockedByAgentName = string.IsNullOrWhiteSpace(blockedName) ? null : blockedName;
     }
 
     private static Agent? ParseAgent(string fileContent)

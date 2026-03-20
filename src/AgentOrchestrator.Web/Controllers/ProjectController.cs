@@ -186,6 +186,10 @@ public class ProjectController : Controller
         IsCeo = a.IsCeo,
         ReportsToId = a.ReportsToId,
         ReportsToName = a.ReportsToName,
-        DirectReportIds = a.DirectReportIds
+        DirectReportIds = a.DirectReportIds,
+        IsBusy = a.IsBusy,
+        CurrentTask = a.CurrentTask,
+        BlockedByAgentId = a.BlockedByAgentId,
+        BlockedByAgentName = a.BlockedByAgentName
     };
 }

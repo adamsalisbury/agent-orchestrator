@@ -91,6 +91,15 @@ public class ThreadOrchestrationService
                 await _threadRepository.SaveMessageAsync(item.AgentId, message);
             }
 
+            // Mark agent as busy with current task
+            var firstUserMessage = (await _threadRepository.GetThreadMessagesAsync(item.AgentId, item.ThreadId))
+                .Where(m => m.Direction == MessageDirection.Outbound && m.Status == MessageStatus.Completed)
+                .OrderBy(m => m.MessageNumber)
+                .LastOrDefault();
+            var taskSummary = firstUserMessage?.Content ?? "Processing request";
+            if (taskSummary.Length > 120) taskSummary = taskSummary[..120] + "...";
+            await _agentRepository.SetCurrentTaskAsync(item.AgentId, taskSummary);
+
             try
             {
                 var allMessages = await _threadRepository.GetThreadMessagesAsync(item.AgentId, item.ThreadId);
@@ -132,6 +141,12 @@ public class ThreadOrchestrationService
 
                     if (targetAgent != null)
                     {
+                        // Mark as blocked, waiting on the target agent
+                        await _agentRepository.SetCurrentTaskAsync(
+                            item.AgentId,
+                            $"Waiting for {targetAgent.Name} ({targetAgent.JobTitle})",
+                            targetAgent.Id, targetAgent.Name);
+
                         var handled = await HandleDelegation(delegation, agent, targetAgent, item);
                         if (handled)
                             continue;
@@ -150,6 +165,9 @@ public class ThreadOrchestrationService
             }
 
             await _threadRepository.SaveMessageAsync(item.AgentId, message);
+
+            // Clear current task — agent is done
+            await _agentRepository.ClearCurrentTaskAsync(item.AgentId);
 
             var callbackKey = $"{item.AgentId}/{item.ThreadId}/{item.MessageNumber}";
             if (_callbacks.TryRemove(callbackKey, out var callback))

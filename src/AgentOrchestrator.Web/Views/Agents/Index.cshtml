@@ -22,9 +22,19 @@ else
             <div class="col-12 col-md-4 mb-3">
                 <div class="card h-100">
                     <div class="card-body d-flex">
-                        <div class="flex-shrink-0 me-3">
+                        <div class="flex-shrink-0 me-3 position-relative">
                             <img src="@Url.Action("Avatar", "Agents", new { id = agent.Id })"
                                  alt="@agent.Name" width="80" height="80" class="rounded" />
+                            @if (agent.IsBusy)
+                            {
+                                <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill @(agent.IsBlocked ? "bg-warning text-dark" : "bg-danger")" style="font-size:0.6rem;">
+                                    @(agent.IsBlocked ? "Blocked" : "Busy")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-secondary" style="font-size:0.6rem;">Idle</span>
+                            }
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="card-title mb-0">
@@ -39,17 +49,22 @@ else
                                 }
                             </h5>
                             <small class="text-muted">@agent.JobTitle</small>
-                            @if (!string.IsNullOrEmpty(agent.ReportsToName))
+                            @if (agent.IsBusy && !string.IsNullOrEmpty(agent.CurrentTask))
                             {
-                                <br /><small class="text-muted">Reports to: @agent.ReportsToName</small>
-                            }
-                            <p class="card-text small mt-1 mb-0" style="white-space: pre-wrap;">@(agent.Persona.Length > 100 ? agent.Persona[..100] + "..." : agent.Persona)</p>
-                            @if (agent.Skills.Any())
-                            {
-                                <div class="mt-2 d-flex flex-wrap gap-1">
-                                    @foreach (var skill in agent.Skills)
+                                <div class="mt-1">
+                                    @if (agent.IsBlocked)
                                     {
-                                        <span class="badge bg-info text-dark" style="font-size:0.75rem;">@skill</span>
+                                        <small class="text-warning">
+                                            <span class="spinner-grow spinner-grow-sm me-1" style="width:0.5rem;height:0.5rem;"></span>
+                                            Waiting on @agent.BlockedByAgentName
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-danger">
+                                            <span class="spinner-border spinner-border-sm me-1" style="width:0.5rem;height:0.5rem;"></span>
+                                            Working...
+                                        </small>
                                     }
                                 </div>
                             }
@@ -57,13 +72,7 @@ else
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
                         <small class="text-muted"><code>@agent.Id</code></small>
-                        <div>
-                            @if (agent.IsDeveloper)
-                            {
-                                <a asp-action="Workspace" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-success me-1" title="View Workspace">&lt;/&gt; Workspace</a>
-                            }
-                            <a asp-action="Threads" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">Threads</a>
-                        </div>
+                        <a asp-action="Detail" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">View</a>
                     </div>
                 </div>
             </div>
