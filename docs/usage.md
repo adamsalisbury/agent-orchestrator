@@ -2,15 +2,20 @@
 
 ## Setup Wizard
 
-On first launch, you'll be redirected to the setup wizard.
+On first launch, you'll be redirected to the setup wizard. The navigation menu is hidden until setup is complete.
 
-### Step 1: Project Details
+### Step 1: Company Name
+
+1. Enter your **company or organisation name** (e.g., "Acme Corp")
+2. Click **Next: Project Details**
+
+### Step 2: Project Details
 
 1. Enter a **project name** (e.g., "CloudSync Platform")
 2. Enter a **project description** — describe what the team is building, the goals, target audience, and tech stack. The more detail you provide, the better the auto-generated team will match your needs.
 3. Click **Next: Build Team**
 
-### Step 2: Build Team
+### Step 3: Build Team
 
 You have two options:
 
@@ -29,15 +34,15 @@ Each agent gets a generated persona and skill set. Progress is shown as each age
 
 Use the inline form to add individual agents by name, job title, and purpose. Each one gets a generated persona and skills.
 
-Once your team is ready, click **Finish Setup** to proceed to the home page.
+Once your team is ready, click **Finish Setup** to proceed to the Project page. The navigation menu (Project, Team, Communication) will now be visible in the header.
 
 ## Agent Profiles
 
-Each agent has a detail page accessible by clicking **View** on the Agents page.
+Each agent has a detail page accessible by clicking **View** on the Team page.
 
 The profile shows:
 
-- **ID badge** — styled like an employee badge with the project name, avatar, name, job title, and joined date
+- **ID badge** — styled like an employee badge with the company name, avatar, name, job title, and joined date
 - **Status** — Idle, Busy, or Blocked, with a description of what the agent is currently working on
 - **General information** — name, job title, joined date, agent ID, role type
 - **Persona** — the full generated persona text
@@ -48,7 +53,7 @@ From the profile page you can access **Communication** (threads), **Workspace** 
 
 ## Sending Messages
 
-1. From the **Agents** page, click **View** on any agent to open their profile
+1. From the **Team** page, click **View** on any agent to open their profile
 2. Click **Communication** to see their threads, then **New Message**
 3. Or click **Send Message** directly from the profile page
 
@@ -56,7 +61,7 @@ The agent processes the message asynchronously. For the CEO, try sending a high-
 
 ## Live Task Status
 
-While agents are working, the Agents page and agent profiles show live status:
+While agents are working, the Team page and agent profiles show live status:
 
 - **Busy** — the agent is actively processing a request, with a description of the task
 - **Blocked** — the agent has delegated to another team member and is waiting for their response
@@ -68,7 +73,7 @@ Status is tracked via a `current-task.md` file that is created when processing s
 
 ### Agent Threads
 
-- Navigate to **Agents** from the top navigation
+- Navigate to **Team** from the top navigation
 - Click **View** on an agent, then **Communication** to see their threads
 - Each thread shows message count, preview, status, and last activity
 
@@ -79,9 +84,9 @@ Status is tracked via a `current-task.md` file that is created when processing s
 - Pending messages show a spinner while the agent is processing
 - Use the reply form at the bottom to continue the conversation
 
-### Messages
+### Communication
 
-- Navigate to **Messages** from the top navigation for a global view across all agents
+- Navigate to **Communication** from the top navigation for a global view across all agents
 - Click any message to view it in full detail with sender/recipient avatars
 
 ## Understanding Delegation
@@ -108,7 +113,7 @@ Developers are aware of each other and are instructed to use the shared director
 
 ### Browsing a Workspace
 
-1. Navigate to **Agents**, click **View** on a developer agent
+1. Navigate to **Team**, click **View** on a developer agent
 2. Click the **`</>` Workspace** button
 3. The workspace browser shows:
    - **Left panel (25%)** — directory and file navigator with `..` to go up (capped at the workspace root)

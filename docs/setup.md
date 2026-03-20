@@ -104,7 +104,8 @@ ASPNETCORE_URLS=http://0.0.0.0:8080 dotnet run --project AgentOrchestrator.Web
 
 1. Open `http://localhost:5181` in a browser
 2. You'll be redirected to the **setup wizard** (since no project is configured yet)
-3. Enter a project name and description, then click **Next: Build Team**
-4. Click **Generate Organisation** — this calls Claude Code to design an org chart and then generates each agent's persona and skills. If this completes, the Claude Code CLI integration is working.
-5. Click **Finish Setup** to reach the home page
-6. Navigate to **Agents** to see your team with avatars, role badges, and reporting lines
+3. Enter a company name, then click **Next: Project Details**
+4. Enter a project name and description, then click **Next: Build Team**
+5. Click **Generate Organisation** — this calls Claude Code to design an org chart and then generates each agent's persona and skills. If this completes, the Claude Code CLI integration is working.
+6. Click **Finish Setup** to reach the Project page
+7. Navigate to **Team** to see your agents with avatars, role badges, and reporting lines

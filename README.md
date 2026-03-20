@@ -4,7 +4,7 @@ A multi-agent orchestration platform that enables creating, managing, and coordi
 
 ## What It Does
 
-- **Setup wizard** — first-run wizard guides you through project creation and team generation
+- **Setup wizard** — 3-step wizard: company name, project details, team generation
 - **Auto-generated organisations** — describe your project and an entire org chart (CEO + 5-10 tailored roles) is created automatically, each with a generated persona and skill set
 - **Organisational hierarchy** — agents are connected via a reporting structure; delegation is restricted to direct reports and managers
 - **Developer workspaces** — agents flagged as developers get personal workspace directories where they write code, browsable via a built-in file viewer
@@ -88,10 +88,10 @@ dotnet test
 ### First Steps
 
 1. Navigate to the web UI — you'll be redirected to the setup wizard
-2. Enter a project name and description
+2. Enter a company name, then project name and description
 3. Click **Generate Organisation** to auto-create a team with a CEO and tailored roles, or add agents manually
-4. Click **Finish Setup** to start using the platform
-5. Send a message to the CEO and watch tasks cascade down the org chart
+4. Click **Finish Setup** — you'll land on the Project page
+5. Navigate to **Team** to view your agents, then send the CEO a directive and watch tasks cascade down the org chart
 
 ## Architecture
 

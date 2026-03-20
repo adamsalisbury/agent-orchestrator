@@ -37,11 +37,12 @@ Agents are arranged in a reporting structure:
 - **Delegation is restricted** to the reporting line — agents can only communicate with their direct manager and direct reports
 - This enables realistic task cascading: the CEO delegates to a VP, who delegates to a developer
 
-### Projects
+### Company & Project
 
-A project provides shared context that all agents understand. It includes:
+The platform is organised around a company and its project:
 
-- **Name and description** — what the team is working on
+- **Company name** — the name of the organisation, displayed in the header throughout the application
+- **Project name and description** — what the team is building, shared as context with all agents
 - **Shared directory** — for exchanging files between agents (specs, notes, documentation)
 - **Team roster** — all agents can see who else is on the team and their roles
 

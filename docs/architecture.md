@@ -45,7 +45,7 @@ Implements the interfaces defined in Core:
 
 The ASP.NET Core MVC presentation layer. Controllers are thin — they validate input, call Core services, and return views or JSON:
 
-- **Controllers** — `HomeController`, `AgentsController` (agents, threads, messages, workspace browser), `ProjectController` (project settings, setup wizard)
+- **Controllers** — `HomeController` (redirects to Project or wizard), `AgentsController` (team, threads, communication, workspace browser), `ProjectController` (project settings, 3-step setup wizard)
 - **Views** — Razor views for all UI pages
 - **Hubs** — `NotificationHub` for SignalR real-time updates
 - **Services** — `PendingMessageTracker` (tracks in-flight requests), `RequestPollingService` (background service monitoring completion)
@@ -108,7 +108,7 @@ All data persists as files under `App_Data/`:
 ```
 App_Data/
 ├── project/
-│   ├── project.md          # Project name and description
+│   ├── project.md          # Company name, project name and description
 │   ├── workspace/          # Shared project workspace
 │   └── shared/             # File exchange between agents
 ├── agent-{id}/
@@ -122,7 +122,7 @@ App_Data/
 └── requests.json           # Request tracking
 ```
 
-Agent metadata in `persona.md` includes YAML frontmatter with: `agentId`, `name`, `jobTitle`, `skills`, `createdAt`, `isDeveloper`, `isCeo`, `reportsToId`, `reportsToName`.
+Project metadata in `project.md` includes YAML frontmatter with: `companyName`, `name`. Agent metadata in `persona.md` includes: `agentId`, `name`, `jobTitle`, `skills`, `createdAt`, `isDeveloper`, `isCeo`, `reportsToId`, `reportsToName`.
 
 ## Key Design Decisions
 
