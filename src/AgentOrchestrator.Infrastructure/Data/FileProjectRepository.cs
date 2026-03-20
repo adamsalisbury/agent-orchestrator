@@ -48,6 +48,26 @@ public class FileProjectRepository : IProjectRepository
         }
     }
 
+    public Task DeleteAsync()
+    {
+        var filePath = Path.Combine(_projectDir, "project.md");
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+        // Clear shared and workspace directories
+        var sharedPath = GetSharedPath();
+        if (Directory.Exists(sharedPath))
+            Directory.Delete(sharedPath, recursive: true);
+        Directory.CreateDirectory(sharedPath);
+
+        var workspacePath = GetWorkspacePath();
+        if (Directory.Exists(workspacePath))
+            Directory.Delete(workspacePath, recursive: true);
+        Directory.CreateDirectory(workspacePath);
+
+        return Task.CompletedTask;
+    }
+
     public string GetWorkspacePath() => Path.Combine(_projectDir, "workspace");
 
     public string GetSharedPath() => Path.Combine(_projectDir, "shared");

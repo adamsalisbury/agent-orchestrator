@@ -114,7 +114,8 @@ public class AgentsController : Controller
     public async Task<IActionResult> ResetEnvironment()
     {
         await _agentRepo.DeleteAllAsync();
-        return RedirectToAction(nameof(Index));
+        await _projectRepo.DeleteAsync();
+        return RedirectToAction("Index", "Home");
     }
 
     // --- Threads ---
