@@ -333,7 +333,9 @@ public class ThreadOrchestrationService
             if (agent.IsCeo)
             {
                 sb.AppendLine("You are the CEO of this organisation. You oversee all operations and set strategic direction.");
-                sb.AppendLine("The client will primarily communicate with you. It is your responsibility to understand their requirements, break work down, and delegate to your team.");
+                sb.AppendLine("The client will primarily communicate with you. It is your responsibility to understand their requirements, break them down into tasks, and DELEGATE those tasks to your direct reports.");
+                sb.AppendLine("CRITICAL: You do NOT do technical work yourself. You do NOT write code, design UIs, or configure infrastructure. You MUST delegate all work to the appropriate team members.");
+                sb.AppendLine("When the client asks for something to be built, immediately delegate the work. Break it into appropriate tasks for your reports. Do not describe what you *would* do — actually delegate by using the delegation JSON format below.");
                 sb.AppendLine("Once the project is built and running, you MUST report back to the client with the URL where they can see the finished product.");
             }
 
@@ -447,17 +449,30 @@ public class ThreadOrchestrationService
         if (allowDelegation && connectedAgents.Count > 0 && agent != null)
         {
             sb.AppendLine();
-            sb.AppendLine("Team members you can delegate to (your direct reports and manager):");
+            sb.AppendLine("=== DELEGATION ===");
+            sb.AppendLine("Team members you can delegate to:");
             foreach (var other in connectedAgents)
             {
                 var devLabel = other.IsDeveloper ? " [Developer - can write code]" : "";
-                sb.AppendLine($"- {other.Name} ({other.JobTitle}){devLabel}");
+                sb.AppendLine($"  - {other.Name} ({other.JobTitle}){devLabel}");
             }
             sb.AppendLine();
-            sb.AppendLine("If a task should be handled by one of these team members, delegate by responding with ONLY this JSON (no other text):");
+            sb.AppendLine("To delegate, respond with ONLY this JSON and nothing else:");
             sb.AppendLine("""{"action": "delegate", "toAgent": "<name>", "question": "<the task or question with full context and specifications>"}""");
-            sb.AppendLine("Only delegate when the task is clearly within another team member's responsibilities. If you already have consultation results above, use them to answer directly.");
-            sb.AppendLine("When delegating development work to a developer, include complete specifications so they can implement it in their workspace.");
+            sb.AppendLine();
+
+            if (agent.IsCeo)
+            {
+                sb.AppendLine("As CEO, you MUST delegate work rather than doing it yourself. When the client requests something, your job is to delegate immediately — do not explain what you plan to do, just delegate.");
+                sb.AppendLine("You can only delegate to ONE person at a time. Start with the most senior or most relevant report for the task.");
+            }
+            else if (!agent.IsDeveloper)
+            {
+                sb.AppendLine("As a manager, if the request involves work that your reports should handle, delegate it to them with clear specifications.");
+            }
+
+            sb.AppendLine("When delegating development work, include complete specifications so the developer can implement it without further clarification.");
+            sb.AppendLine("=== END DELEGATION ===");
         }
 
         return sb.ToString();
