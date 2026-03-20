@@ -48,12 +48,6 @@ public class FileAgentRepository : IAgentRepository
             var avatarSvg = AvatarGenerator.Generate(id, isDeveloper, isCeo);
             await File.WriteAllTextAsync(Path.Combine(agentDir, "avatar.svg"), avatarSvg);
 
-            // Create workspace directory for developers
-            if (isDeveloper)
-            {
-                Directory.CreateDirectory(Path.Combine(agentDir, "workspace"));
-            }
-
             return agent;
         }
         finally

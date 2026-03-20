@@ -51,7 +51,7 @@
             <a asp-action="Threads" asp-route-id="@Model.Id" class="btn btn-primary">Communication</a>
             @if (Model.IsDeveloper)
             {
-                <a asp-action="Workspace" asp-route-id="@Model.Id" class="btn btn-outline-success">&lt;/&gt; Workspace</a>
+                <a asp-controller="Project" asp-action="Workspace" class="btn btn-outline-success">&lt;/&gt; Workspace</a>
             }
             <a asp-action="Compose" asp-route-agentId="@Model.Id" class="btn btn-outline-secondary">Send Message</a>
         </div>

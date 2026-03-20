@@ -112,17 +112,8 @@ public class ThreadOrchestrationService
                 var teamAgents = await _agentRepository.GetAllAsync();
                 var project = await _projectRepository.GetAsync();
 
-                // Determine working directory: developers use their own workspace
-                string workingDir;
-                if (agent?.IsDeveloper == true)
-                {
-                    workingDir = _agentRepository.GetAgentWorkspacePath(item.AgentId);
-                    Directory.CreateDirectory(workingDir);
-                }
-                else
-                {
-                    workingDir = _projectRepository.GetWorkspacePath();
-                }
+                // All agents work in the shared project workspace
+                var workingDir = _projectRepository.GetWorkspacePath();
 
                 // Get connected agents (manager + direct reports) for delegation
                 var connectedAgents = GetConnectedAgents(agent, teamAgents);
@@ -342,6 +333,7 @@ public class ThreadOrchestrationService
             {
                 sb.AppendLine("You are the CEO of this organisation. You oversee all operations and set strategic direction.");
                 sb.AppendLine("The client will primarily communicate with you. It is your responsibility to understand their requirements, break work down, and delegate to your team.");
+                sb.AppendLine("Once the project is built and running, you MUST report back to the client with the URL where they can see the finished product.");
             }
 
             // Manager info
@@ -368,22 +360,42 @@ public class ThreadOrchestrationService
 
             if (agent.IsDeveloper)
             {
-                sb.AppendLine();
-                sb.AppendLine("You are a DEVELOPER. Your current working directory is your personal workspace.");
-                sb.AppendLine("When asked to develop, build, or implement something, you MUST write the code in your workspace directory.");
-                sb.AppendLine("Create proper project structures, write clean code, and ensure everything builds correctly.");
+                var isDevOps = IsDevOpsRole(agent.JobTitle);
 
-                // Peer developer awareness
-                var peerDevs = allAgents.Where(a => a.IsDeveloper && a.Id != agent.Id).ToList();
-                if (peerDevs.Count > 0)
+                sb.AppendLine();
+                sb.AppendLine("=== WORKSPACE ===");
+                sb.AppendLine("Your current working directory is the shared project workspace. All developers and DevOps engineers work in this same directory.");
+                sb.AppendLine("This means you can see code written by other team members and they can see yours.");
+
+                if (isDevOps)
                 {
                     sb.AppendLine();
-                    sb.AppendLine("PEER DEVELOPERS: You should be aware of other developers on the team:");
-                    foreach (var peer in peerDevs)
-                        sb.AppendLine($"  - {peer.Name} ({peer.JobTitle})");
-                    sb.AppendLine("Use the shared directory (../shared/) to coordinate with peers — for example, agreeing on API contracts, sharing interface definitions, or leaving notes about integration points.");
-                    sb.AppendLine("If you need to align with another developer (e.g., a frontend developer agreeing on an API contract with a backend developer), write the shared specification to the shared directory so both parties can reference it.");
+                    sb.AppendLine("You are a DEVOPS ENGINEER. Your responsibilities include:");
+                    sb.AppendLine("- Running and hosting the project (e.g., dotnet run, npx http-server, python -m http.server, or whatever is appropriate for the tech stack)");
+                    sb.AppendLine("- Setting up build scripts, configuration, and deployment");
+                    sb.AppendLine("- When a developer tells you the code is ready, review the workspace, run the project, and report back the URL where it can be accessed");
+                    sb.AppendLine("- The application is hosted on this machine, so use localhost or 0.0.0.0 with an appropriate port");
                 }
+                else
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("You are a DEVELOPER. When asked to develop, build, or implement something, you MUST write the code in the workspace directory.");
+                    sb.AppendLine("Create proper project structures, write clean code, and ensure everything builds correctly.");
+                    sb.AppendLine("Once your work is complete, notify your manager or the DevOps engineer (via delegation) so they can run and host the project.");
+                }
+
+                // Peer awareness
+                var peers = allAgents.Where(a => a.IsDeveloper && a.Id != agent.Id).ToList();
+                if (peers.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("OTHER DEVELOPERS & DEVOPS IN THE TEAM:");
+                    foreach (var peer in peers)
+                        sb.AppendLine($"  - {peer.Name} ({peer.JobTitle})");
+                    sb.AppendLine("Since you all share the same workspace, coordinate carefully. Use the shared directory (../shared/) for specifications, API contracts, and integration notes so everyone stays aligned.");
+                }
+
+                sb.AppendLine("=== END WORKSPACE ===");
             }
 
             sb.AppendLine();
@@ -445,6 +457,13 @@ public class ThreadOrchestrationService
         }
 
         return sb.ToString();
+    }
+
+    private static bool IsDevOpsRole(string jobTitle)
+    {
+        var keywords = new[] { "devops", "sre", "infrastructure", "platform engineer", "release", "operations" };
+        var lower = jobTitle.ToLowerInvariant();
+        return keywords.Any(k => lower.Contains(k));
     }
 
     public static string GenerateId()

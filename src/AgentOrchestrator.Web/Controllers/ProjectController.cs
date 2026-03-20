@@ -228,6 +228,92 @@ public class ProjectController : Controller
         }
     }
 
+    // --- Workspace Browser ---
+
+    public IActionResult Workspace(string? path)
+    {
+        var workspaceRoot = _projectRepo.GetWorkspacePath();
+        if (!Directory.Exists(workspaceRoot))
+            Directory.CreateDirectory(workspaceRoot);
+
+        var relativePath = SanitisePath(path ?? "");
+        var fullPath = Path.GetFullPath(Path.Combine(workspaceRoot, relativePath));
+
+        if (!fullPath.StartsWith(Path.GetFullPath(workspaceRoot)))
+            fullPath = workspaceRoot;
+
+        var model = new WorkspaceViewModel
+        {
+            AgentId = "",
+            AgentName = "Project Workspace",
+            CurrentPath = relativePath
+        };
+
+        if (System.IO.File.Exists(fullPath))
+        {
+            model.IsViewingFile = true;
+            model.FileName = Path.GetFileName(fullPath);
+
+            try
+            {
+                model.FileContent = System.IO.File.ReadAllText(fullPath);
+            }
+            catch
+            {
+                model.FileContent = "[Binary file — cannot display]";
+            }
+
+            var parentDir = Path.GetDirectoryName(fullPath) ?? workspaceRoot;
+            model.CurrentPath = Path.GetRelativePath(workspaceRoot, parentDir);
+            if (model.CurrentPath == ".") model.CurrentPath = "";
+            model.Entries = GetDirectoryEntries(parentDir, workspaceRoot);
+        }
+        else if (Directory.Exists(fullPath))
+        {
+            model.Entries = GetDirectoryEntries(fullPath, workspaceRoot);
+        }
+
+        return View(model);
+    }
+
+    private static List<WorkspaceEntry> GetDirectoryEntries(string directory, string workspaceRoot)
+    {
+        var entries = new List<WorkspaceEntry>();
+
+        try
+        {
+            foreach (var dir in Directory.GetDirectories(directory).OrderBy(d => d))
+            {
+                entries.Add(new WorkspaceEntry
+                {
+                    Name = Path.GetFileName(dir),
+                    IsDirectory = true,
+                    RelativePath = Path.GetRelativePath(workspaceRoot, dir)
+                });
+            }
+
+            foreach (var file in Directory.GetFiles(directory).OrderBy(f => f))
+            {
+                var info = new FileInfo(file);
+                entries.Add(new WorkspaceEntry
+                {
+                    Name = info.Name,
+                    IsDirectory = false,
+                    RelativePath = Path.GetRelativePath(workspaceRoot, file),
+                    Size = info.Length
+                });
+            }
+        }
+        catch { }
+
+        return entries;
+    }
+
+    private static string SanitisePath(string path)
+    {
+        return path.Replace("..", "").Replace("~", "").TrimStart('/').TrimStart('\\');
+    }
+
     private static AgentViewModel ToViewModel(Agent a) => new()
     {
         Id = a.Id,

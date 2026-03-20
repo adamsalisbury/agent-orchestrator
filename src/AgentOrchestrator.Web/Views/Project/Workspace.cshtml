@@ -1,14 +1,14 @@
 @model AgentOrchestrator.Web.Models.WorkspaceViewModel
 @{
-    ViewData["Title"] = $"Workspace — {Model.AgentName}";
+    ViewData["Title"] = "Workspace";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h2 class="mb-0">&lt;/&gt; Workspace</h2>
-        <small class="text-muted">@Model.AgentName</small>
+        <small class="text-muted">Shared project workspace</small>
     </div>
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Agents</a>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Project</a>
 </div>
 
 <div class="row" style="min-height: 500px;">
@@ -29,7 +29,7 @@
                     {
                         parentPath = Model.CurrentPath[..lastSlash];
                     }
-                    <a asp-action="Workspace" asp-route-id="@Model.AgentId" asp-route-path="@parentPath"
+                    <a asp-action="Workspace" asp-route-path="@parentPath"
                        class="list-group-item list-group-item-action py-1 px-3">
                         <span class="text-muted">..</span>
                     </a>
@@ -43,7 +43,7 @@
                 @foreach (var entry in Model.Entries)
                 {
                     var isActive = Model.IsViewingFile && Model.FileName == entry.Name && !entry.IsDirectory;
-                    <a asp-action="Workspace" asp-route-id="@Model.AgentId" asp-route-path="@entry.RelativePath"
+                    <a asp-action="Workspace" asp-route-path="@entry.RelativePath"
                        class="list-group-item list-group-item-action py-1 px-3 d-flex justify-content-between align-items-center @(isActive ? "active" : "")">
                         <span>
                             @if (entry.IsDirectory)
