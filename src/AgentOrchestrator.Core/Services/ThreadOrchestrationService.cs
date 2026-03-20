@@ -363,6 +363,18 @@ public class ThreadOrchestrationService
                 sb.AppendLine("You are a DEVELOPER. Your current working directory is your personal workspace.");
                 sb.AppendLine("When asked to develop, build, or implement something, you MUST write the code in your workspace directory.");
                 sb.AppendLine("Create proper project structures, write clean code, and ensure everything builds correctly.");
+
+                // Peer developer awareness
+                var peerDevs = allAgents.Where(a => a.IsDeveloper && a.Id != agent.Id).ToList();
+                if (peerDevs.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("PEER DEVELOPERS: You should be aware of other developers on the team:");
+                    foreach (var peer in peerDevs)
+                        sb.AppendLine($"  - {peer.Name} ({peer.JobTitle})");
+                    sb.AppendLine("Use the shared directory (../shared/) to coordinate with peers — for example, agreeing on API contracts, sharing interface definitions, or leaving notes about integration points.");
+                    sb.AppendLine("If you need to align with another developer (e.g., a frontend developer agreeing on an API contract with a backend developer), write the shared specification to the shared directory so both parties can reference it.");
+                }
             }
 
             sb.AppendLine();

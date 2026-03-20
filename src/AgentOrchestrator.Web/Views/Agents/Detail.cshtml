@@ -8,13 +8,27 @@
 </div>
 
 <div class="row">
-    <!-- Left column: Avatar + Status -->
-    <div class="col-md-3 mb-3 text-center">
-        <img src="@Url.Action("Avatar", "Agents", new { id = Model.Id })"
-             alt="@Model.Name" width="160" height="160" class="rounded mb-3" />
+    <!-- Left column: ID Badge + Status + Actions -->
+    <div class="col-md-4 col-lg-3 mb-3">
+
+        <!-- ID Badge -->
+        <div class="id-badge mb-3 mx-auto">
+            <div class="id-badge-header">
+                @(string.IsNullOrEmpty(Model.ProjectName) ? "Agent Studio" : Model.ProjectName)
+            </div>
+            <div class="id-badge-body">
+                <img src="@Url.Action("Avatar", "Agents", new { id = Model.Id })"
+                     alt="@Model.Name" width="72" height="72" class="rounded" />
+                <div class="id-badge-info">
+                    <div class="id-badge-name">@Model.Name</div>
+                    <div class="id-badge-title">@Model.JobTitle</div>
+                    <div class="id-badge-date">Joined @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</div>
+                </div>
+            </div>
+        </div>
 
         <!-- Status -->
-        <div class="mb-3">
+        <div class="text-center mb-3">
             @if (Model.IsBusy)
             {
                 if (Model.IsBlocked)
@@ -44,7 +58,9 @@
     </div>
 
     <!-- Right column: Agent details -->
-    <div class="col-md-9">
+    <div class="col-md-8 col-lg-9">
+
+        <!-- Name & Title -->
         <div class="card mb-3">
             <div class="card-body">
                 <h2 class="mb-0">
@@ -58,7 +74,7 @@
                         <span class="badge bg-success ms-1" style="font-size:0.7rem;">&lt;/&gt; Developer</span>
                     }
                 </h2>
-                <h5 class="text-muted mt-1">@Model.JobTitle</h5>
+                <h5 class="text-muted mt-1 mb-0">@Model.JobTitle</h5>
             </div>
         </div>
 
@@ -85,6 +101,45 @@
                 </div>
             </div>
         }
+
+        <!-- General Information -->
+        <div class="card mb-3">
+            <div class="card-header"><strong>General Information</strong></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Name</strong>
+                        @Model.Name
+                    </div>
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Job Title</strong>
+                        @Model.JobTitle
+                    </div>
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Joined</strong>
+                        @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Agent ID</strong>
+                        <code>@Model.Id</code>
+                    </div>
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Role Type</strong>
+                        @if (Model.IsCeo) { <span>CEO</span> }
+                        else if (Model.IsDeveloper) { <span>Developer</span> }
+                        else { <span>Management / Specialist</span> }
+                    </div>
+                    <div class="col-sm-4 mb-2">
+                        <strong class="text-muted d-block">Status</strong>
+                        @if (Model.IsBusy && Model.IsBlocked) { <span class="text-warning">Blocked</span> }
+                        else if (Model.IsBusy) { <span class="text-danger">Busy</span> }
+                        else { <span class="text-muted">Idle</span> }
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Persona -->
         <div class="card mb-3">
@@ -141,20 +196,6 @@
                         {
                             <span class="text-muted">None</span>
                         }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Meta -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="row text-muted small">
-                    <div class="col-md-6">
-                        <strong>Agent ID:</strong> <code>@Model.Id</code>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Created:</strong> @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")
                     </div>
                 </div>
             </div>

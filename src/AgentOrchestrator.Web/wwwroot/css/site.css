@@ -250,6 +250,73 @@ body.dark-mode .wizard-connector.completed {
   background-color: #198754;
 }
 
+/* ---- ID badge ---- */
+.id-badge {
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.id-badge-header {
+  background: linear-gradient(135deg, #1a1d21 0%, #2b2f35 100%);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.id-badge-body {
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: #fff;
+}
+
+.id-badge-info {
+  flex-grow: 1;
+}
+
+.id-badge-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.id-badge-title {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.id-badge-date {
+  color: #9a9da1;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+body.dark-mode .id-badge {
+  border-color: #3a3f47;
+}
+
+body.dark-mode .id-badge-header {
+  background: linear-gradient(135deg, #0d6efd 0%, #1a3a5c 100%);
+}
+
+body.dark-mode .id-badge-body {
+  background: #2b2f35;
+}
+
+body.dark-mode .id-badge-name {
+  color: #e0e0e0;
+}
+
+body.dark-mode .id-badge-title {
+  color: #9a9da1;
+}
+
 .agent-roster-row {
   transition: background-color 0.2s;
 }

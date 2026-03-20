@@ -19,6 +19,7 @@ public class AgentViewModel
     public string? BlockedByAgentId { get; set; }
     public string? BlockedByAgentName { get; set; }
     public bool IsBlocked => !string.IsNullOrEmpty(BlockedByAgentId);
+    public string ProjectName { get; set; } = string.Empty;
     public string DisplayName => $"{Name} ({JobTitle})";
 }
 

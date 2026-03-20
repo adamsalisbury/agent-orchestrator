@@ -11,17 +11,20 @@ namespace AgentOrchestrator.Web.Controllers;
 public class AgentsController : Controller
 {
     private readonly IAgentRepository _agentRepo;
+    private readonly IProjectRepository _projectRepo;
     private readonly AgentService _agentService;
     private readonly ThreadOrchestrationService _threadService;
     private readonly PendingMessageTracker _tracker;
 
     public AgentsController(
         IAgentRepository agentRepo,
+        IProjectRepository projectRepo,
         AgentService agentService,
         ThreadOrchestrationService threadService,
         PendingMessageTracker tracker)
     {
         _agentRepo = agentRepo;
+        _projectRepo = projectRepo;
         _agentService = agentService;
         _threadService = threadService;
         _tracker = tracker;
@@ -42,7 +45,10 @@ public class AgentsController : Controller
         if (agent == null)
             return NotFound();
 
-        return View(ToViewModel(agent, agents));
+        var project = await _projectRepo.GetAsync();
+        var vm = ToViewModel(agent, agents);
+        vm.ProjectName = project?.Name ?? "";
+        return View(vm);
     }
 
     public IActionResult Create()
