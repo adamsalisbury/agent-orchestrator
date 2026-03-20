@@ -21,6 +21,9 @@ builder.Services.AddSingleton<IThreadRepository>(
     new FileThreadRepository(dataDirectory));
 builder.Services.AddSingleton<IProjectRepository>(
     new FileProjectRepository(dataDirectory));
+
+builder.Services.AddSingleton<AgentService>();
+builder.Services.AddSingleton<TeamService>();
 builder.Services.AddSingleton<ThreadOrchestrationService>();
 
 builder.Services.AddSingleton<PendingMessageTracker>();

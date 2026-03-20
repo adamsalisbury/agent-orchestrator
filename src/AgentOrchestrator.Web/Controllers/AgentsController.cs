@@ -11,18 +11,18 @@ namespace AgentOrchestrator.Web.Controllers;
 public class AgentsController : Controller
 {
     private readonly IAgentRepository _agentRepo;
-    private readonly IClaudeCodeRunner _runner;
+    private readonly AgentService _agentService;
     private readonly ThreadOrchestrationService _threadService;
     private readonly PendingMessageTracker _tracker;
 
     public AgentsController(
         IAgentRepository agentRepo,
-        IClaudeCodeRunner runner,
+        AgentService agentService,
         ThreadOrchestrationService threadService,
         PendingMessageTracker tracker)
     {
         _agentRepo = agentRepo;
-        _runner = runner;
+        _agentService = agentService;
         _threadService = threadService;
         _tracker = tracker;
     }
@@ -54,12 +54,7 @@ public class AgentsController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var skills = (model.Skills ?? "")
-            .Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(s => s.Trim())
-            .Where(s => s.Length > 0)
-            .ToList();
-
+        var skills = AgentService.ParseSkillsCsv(model.Skills ?? "");
         await _agentRepo.CreateAsync(model.Name, model.JobTitle, model.Persona, skills);
         return RedirectToAction(nameof(Index));
     }
@@ -70,19 +65,10 @@ public class AgentsController : Controller
         if (string.IsNullOrWhiteSpace(request?.JobTitle))
             return BadRequest(new { error = "Job title is required." });
 
-        var purposeContext = string.IsNullOrWhiteSpace(request.Purpose)
-            ? ""
-            : $" Their purpose is: \"{request.Purpose}\".";
-
-        var prompt = $"Generate an agent persona/system prompt for an AI agent whose job title is: \"{request.JobTitle}\".{purposeContext} " +
-                     "Cover their expertise, work approach, and responsibilities. " +
-                     "The agent will be part of a software development team collaborating with other specialist agents. " +
-                     "Keep it under 100 words. Output ONLY the persona text, no preamble or explanation.";
-
         try
         {
-            var result = await _runner.ExecuteAsync(prompt);
-            return Json(new { persona = result.Trim() });
+            var persona = await _agentService.GeneratePersonaAsync(request.JobTitle, request.Purpose);
+            return Json(new { persona });
         }
         catch (Exception ex)
         {
@@ -96,22 +82,9 @@ public class AgentsController : Controller
         if (string.IsNullOrWhiteSpace(request?.JobTitle))
             return BadRequest(new { error = "Job title is required." });
 
-        var purposeContext = string.IsNullOrWhiteSpace(request.Purpose)
-            ? ""
-            : $" Their purpose is: \"{request.Purpose}\".";
-
-        var prompt = $"List 5-8 short skill tags for an AI agent whose job title is: \"{request.JobTitle}\".{purposeContext} " +
-                     "These are concise skill labels like \"UI/UX\", \"React\", \"API Design\", \"Code Review\". " +
-                     "Output ONLY a comma-separated list, no numbering, no explanation.";
-
         try
         {
-            var result = await _runner.ExecuteAsync(prompt);
-            var skills = result.Trim()
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim().Trim('"', '\''))
-                .Where(s => s.Length > 0)
-                .ToList();
+            var skills = await _agentService.GenerateSkillsAsync(request.JobTitle, request.Purpose);
             return Json(new { skills });
         }
         catch (Exception ex)
@@ -246,7 +219,6 @@ public class AgentsController : Controller
         {
             var messages = await _threadService.GetAllMessagesAsync(agent.Id);
 
-            // For each thread, detect if it's a consultation thread (has outbound from another agent)
             var consultOriginByThread = messages
                 .Where(m => m.Direction == MessageDirection.Outbound && m.FromAgentId != null)
                 .GroupBy(m => m.ThreadId)
@@ -275,7 +247,6 @@ public class AgentsController : Controller
         var m = messages.FirstOrDefault(x => x.MessageNumber == messageNumber);
         if (m == null) return NotFound();
 
-        // Check if this is a consultation thread
         var consultingAgentId = messages
             .FirstOrDefault(x => x.Direction == MessageDirection.Outbound && x.FromAgentId != null)
             ?.FromAgentId;
@@ -308,11 +279,9 @@ public class AgentsController : Controller
         if (!Directory.Exists(workspaceRoot))
             Directory.CreateDirectory(workspaceRoot);
 
-        // Sanitise path to prevent directory traversal
         var relativePath = SanitisePath(path ?? "");
         var fullPath = Path.GetFullPath(Path.Combine(workspaceRoot, relativePath));
 
-        // Ensure we don't escape the workspace root
         if (!fullPath.StartsWith(Path.GetFullPath(workspaceRoot)))
             fullPath = workspaceRoot;
 
@@ -325,7 +294,6 @@ public class AgentsController : Controller
 
         if (System.IO.File.Exists(fullPath))
         {
-            // Viewing a file
             model.IsViewingFile = true;
             model.FileName = Path.GetFileName(fullPath);
 
@@ -338,7 +306,6 @@ public class AgentsController : Controller
                 model.FileContent = "[Binary file — cannot display]";
             }
 
-            // Still populate directory listing for the parent
             var parentDir = Path.GetDirectoryName(fullPath) ?? workspaceRoot;
             model.CurrentPath = Path.GetRelativePath(workspaceRoot, parentDir);
             if (model.CurrentPath == ".") model.CurrentPath = "";
@@ -346,7 +313,6 @@ public class AgentsController : Controller
         }
         else if (Directory.Exists(fullPath))
         {
-            // Viewing a directory
             model.Entries = GetDirectoryEntries(fullPath, workspaceRoot);
         }
 
@@ -361,10 +327,9 @@ public class AgentsController : Controller
         {
             foreach (var dir in Directory.GetDirectories(directory).OrderBy(d => d))
             {
-                var name = Path.GetFileName(dir);
                 entries.Add(new WorkspaceEntry
                 {
-                    Name = name,
+                    Name = Path.GetFileName(dir),
                     IsDirectory = true,
                     RelativePath = Path.GetRelativePath(workspaceRoot, dir)
                 });
@@ -389,7 +354,6 @@ public class AgentsController : Controller
 
     private static string SanitisePath(string path)
     {
-        // Remove any directory traversal attempts
         return path.Replace("..", "").Replace("~", "").TrimStart('/').TrimStart('\\');
     }
 
@@ -400,7 +364,6 @@ public class AgentsController : Controller
 
         if (m.Direction == MessageDirection.Outbound && m.FromAgentId != null)
         {
-            // Agent -> Agent consultation (e.g. Brian asking Sarah)
             var askingAgent = agentLookup.GetValueOrDefault(m.FromAgentId);
             fromName = askingAgent?.DisplayName ?? m.FromAgentName ?? "Unknown";
             fromAvatarId = m.FromAgentId;
@@ -409,7 +372,6 @@ public class AgentsController : Controller
         }
         else if (m.Direction == MessageDirection.Outbound)
         {
-            // User -> Agent
             fromName = "You";
             fromAvatarId = "adam";
             toName = threadAgent.DisplayName;
@@ -417,7 +379,6 @@ public class AgentsController : Controller
         }
         else if (m.FromAgentId != null)
         {
-            // Consultation response in user's thread
             var consultAgent = agentLookup.GetValueOrDefault(m.FromAgentId);
             fromName = consultAgent?.DisplayName ?? m.FromAgentName ?? "Unknown";
             fromAvatarId = m.FromAgentId;
@@ -426,7 +387,6 @@ public class AgentsController : Controller
         }
         else if (consultingAgentId != null)
         {
-            // Agent responding in a consultation thread — reply goes back to the consulting agent
             var consultAgent = agentLookup.GetValueOrDefault(consultingAgentId);
             fromName = threadAgent.DisplayName;
             fromAvatarId = threadAgent.Id;
@@ -435,7 +395,6 @@ public class AgentsController : Controller
         }
         else
         {
-            // Agent -> User
             fromName = threadAgent.DisplayName;
             fromAvatarId = threadAgent.Id;
             toName = "You";
@@ -477,7 +436,6 @@ public class AgentsController : Controller
             if (!Directory.Exists(agentDir))
                 return NotFound();
 
-            // Check agent flags for badge generation
             var agent = await _agentRepo.GetAsync(id);
             var svg = AvatarGenerator.Generate(id, agent?.IsDeveloper ?? false, agent?.IsCeo ?? false);
             await System.IO.File.WriteAllTextAsync(avatarPath, svg);
