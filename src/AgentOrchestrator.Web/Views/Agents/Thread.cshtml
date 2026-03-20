@@ -42,7 +42,7 @@ else
                 <div class="d-flex align-items-center">
                     @if (displayAvatarId != null)
                     {
-                        <img src="@Url.Action("Avatar", "Mailbox", new { id = displayAvatarId })"
+                        <img src="@Url.Action("Avatar", "Agents", new { id = displayAvatarId })"
                              alt="@senderName" width="24" height="24" class="rounded me-2" />
                     }
                     <strong>@senderName</strong>
