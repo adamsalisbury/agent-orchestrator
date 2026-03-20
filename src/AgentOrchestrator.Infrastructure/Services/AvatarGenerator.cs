@@ -189,18 +189,18 @@ public static class AvatarGenerator
                 break;
         }
 
-        // --- Role badges ---
+        // --- Role badges (centred over face) ---
         if (isDeveloper)
         {
-            // </> code badge in top-right corner
-            sb.AppendLine("""  <rect x="155" y="8" width="38" height="24" rx="6" fill="#1a1a2e" opacity="0.85"/>""");
-            sb.AppendLine("""  <text x="174" y="25" text-anchor="middle" fill="#4ADE80" font-family="monospace" font-size="13" font-weight="bold">&lt;/&gt;</text>""");
+            // </> code badge — large, centred
+            sb.AppendLine("""  <rect x="62" y="95" width="76" height="44" rx="10" fill="#1a1a2e" opacity="0.85"/>""");
+            sb.AppendLine("""  <text x="100" y="125" text-anchor="middle" fill="#4ADE80" font-family="monospace" font-size="26" font-weight="bold">&lt;/&gt;</text>""");
         }
 
         if (isCeo)
         {
-            // Gold star badge in top-right corner
-            sb.AppendLine("""  <polygon points="174,8 178,18 189,19 181,26 183,37 174,32 165,37 167,26 159,19 170,18" fill="#FFD700" stroke="#B8860B" stroke-width="1"/>""");
+            // Gold star — large, centred
+            sb.AppendLine("""  <polygon points="100,80 108,100 130,103 114,118 118,140 100,130 82,140 86,118 70,103 92,100" fill="#FFD700" stroke="#B8860B" stroke-width="2"/>""");
         }
 
         sb.AppendLine("</svg>");
