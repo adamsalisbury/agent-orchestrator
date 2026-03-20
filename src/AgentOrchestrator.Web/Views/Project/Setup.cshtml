@@ -1,6 +1,7 @@
 @model AgentOrchestrator.Web.Models.EditProjectViewModel
 @{
-    ViewData["Title"] = "Project Setup";
+    ViewData["Title"] = "Setup";
+    ViewData["HideNav"] = true;
 }
 
 <div class="row justify-content-center mt-4">
@@ -9,11 +10,16 @@
         <div class="d-flex align-items-center mb-4">
             <div class="wizard-step active">
                 <span class="wizard-number">1</span>
-                <span class="wizard-label">Project Details</span>
+                <span class="wizard-label">Company</span>
             </div>
             <div class="wizard-connector"></div>
             <div class="wizard-step">
                 <span class="wizard-number">2</span>
+                <span class="wizard-label">Project</span>
+            </div>
+            <div class="wizard-connector"></div>
+            <div class="wizard-step">
+                <span class="wizard-number">3</span>
                 <span class="wizard-label">Build Team</span>
             </div>
         </div>
@@ -21,26 +27,20 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title mb-1">Welcome to Agent Studio</h3>
-                <p class="text-muted mb-4">Let's set up your project. Tell us what you're building and we'll help you assemble the right team.</p>
+                <p class="text-muted mb-4">Let's get started. What's the name of your company or organisation?</p>
 
                 <form asp-action="Setup" method="post">
                     @Html.AntiForgeryToken()
 
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label"><strong>Project Name</strong></label>
-                        <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g. CloudSync Platform" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
-
                     <div class="mb-4">
-                        <label asp-for="Description" class="form-label"><strong>Project Description</strong></label>
-                        <textarea asp-for="Description" class="form-control" rows="6" placeholder="Describe the project, its goals, target audience, tech stack, and any other context that will help your agents understand what they're working on..."></textarea>
-                        <div class="form-text">The more detail you provide, the better your auto-generated team will be.</div>
+                        <label asp-for="CompanyName" class="form-label"><strong>Company Name</strong></label>
+                        <input asp-for="CompanyName" class="form-control form-control-lg" placeholder="e.g. Acme Corp" />
+                        <span asp-validation-for="CompanyName" class="text-danger"></span>
                     </div>
 
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            Next: Build Team &rarr;
+                            Next: Project Details &rarr;
                         </button>
                     </div>
                 </form>

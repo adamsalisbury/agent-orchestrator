@@ -22,6 +22,9 @@ public class ProjectController : Controller
     public async Task<IActionResult> Index()
     {
         var project = await _projectRepo.GetAsync();
+        if (project == null)
+            return RedirectToAction(nameof(Setup));
+
         var agents = await _agentRepo.GetAllAsync();
 
         var sharedPath = _projectRepo.GetSharedPath();
@@ -39,9 +42,10 @@ public class ProjectController : Controller
 
         return View(new ProjectViewModel
         {
-            Name = project?.Name ?? "",
-            Description = project?.Description ?? "",
-            IsConfigured = project != null,
+            CompanyName = project.CompanyName,
+            Name = project.Name,
+            Description = project.Description,
+            IsConfigured = true,
             Agents = agents.OrderBy(a => a.Name).Select(ToViewModel).ToList(),
             SharedFiles = sharedFiles
         });
@@ -52,6 +56,7 @@ public class ProjectController : Controller
         var project = await _projectRepo.GetAsync();
         return View(new EditProjectViewModel
         {
+            CompanyName = project?.CompanyName ?? "",
             Name = project?.Name ?? "",
             Description = project?.Description ?? ""
         });
@@ -61,14 +66,17 @@ public class ProjectController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditProjectViewModel model)
     {
+        if (string.IsNullOrWhiteSpace(model.CompanyName))
+            ModelState.AddModelError(nameof(model.CompanyName), "Company name is required.");
         if (string.IsNullOrWhiteSpace(model.Name))
-            ModelState.AddModelError(nameof(model.Name), "Name is required.");
+            ModelState.AddModelError(nameof(model.Name), "Project name is required.");
 
         if (!ModelState.IsValid)
             return View(model);
 
         await _projectRepo.SaveAsync(new Project
         {
+            CompanyName = model.CompanyName,
             Name = model.Name,
             Description = model.Description ?? ""
         });
@@ -78,11 +86,13 @@ public class ProjectController : Controller
 
     // --- Setup Wizard ---
 
+    // Step 1: Company Name
     public async Task<IActionResult> Setup()
     {
         var project = await _projectRepo.GetAsync();
         return View(new EditProjectViewModel
         {
+            CompanyName = project?.CompanyName ?? "",
             Name = project?.Name ?? "",
             Description = project?.Description ?? ""
         });
@@ -92,14 +102,57 @@ public class ProjectController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Setup(EditProjectViewModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.Name))
-            ModelState.AddModelError(nameof(model.Name), "Name is required.");
+        if (string.IsNullOrWhiteSpace(model.CompanyName))
+            ModelState.AddModelError(nameof(model.CompanyName), "Company name is required.");
 
         if (!ModelState.IsValid)
             return View(model);
 
+        // Save company name now; project details come in step 2
+        var existing = await _projectRepo.GetAsync();
         await _projectRepo.SaveAsync(new Project
         {
+            CompanyName = model.CompanyName,
+            Name = existing?.Name ?? "",
+            Description = existing?.Description ?? ""
+        });
+
+        return RedirectToAction(nameof(SetupProject));
+    }
+
+    // Step 2: Project Details
+    public async Task<IActionResult> SetupProject()
+    {
+        var project = await _projectRepo.GetAsync();
+        if (project == null)
+            return RedirectToAction(nameof(Setup));
+
+        return View(new EditProjectViewModel
+        {
+            CompanyName = project.CompanyName,
+            Name = project.Name,
+            Description = project.Description
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetupProject(EditProjectViewModel model)
+    {
+        if (string.IsNullOrWhiteSpace(model.Name))
+            ModelState.AddModelError(nameof(model.Name), "Project name is required.");
+
+        if (!ModelState.IsValid)
+        {
+            var project = await _projectRepo.GetAsync();
+            model.CompanyName = project?.CompanyName ?? "";
+            return View(model);
+        }
+
+        var existing = await _projectRepo.GetAsync();
+        await _projectRepo.SaveAsync(new Project
+        {
+            CompanyName = existing?.CompanyName ?? model.CompanyName,
             Name = model.Name,
             Description = model.Description ?? ""
         });
@@ -107,6 +160,7 @@ public class ProjectController : Controller
         return RedirectToAction(nameof(SetupAgents));
     }
 
+    // Step 3: Build Team
     public async Task<IActionResult> SetupAgents()
     {
         var project = await _projectRepo.GetAsync();

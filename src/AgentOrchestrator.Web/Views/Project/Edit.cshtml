@@ -11,6 +11,12 @@
             @Html.AntiForgeryToken()
 
             <div class="mb-3">
+                <label asp-for="CompanyName" class="form-label"><strong>Company Name</strong></label>
+                <input asp-for="CompanyName" class="form-control" placeholder="e.g. Acme Corp" />
+                <span asp-validation-for="CompanyName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
                 <label asp-for="Name" class="form-label"><strong>Project Name</strong></label>
                 <input asp-for="Name" class="form-control" placeholder="e.g. My SaaS Product" />
                 <span asp-validation-for="Name" class="text-danger"></span>
@@ -18,7 +24,7 @@
 
             <div class="mb-3">
                 <label asp-for="Description" class="form-label"><strong>Description</strong></label>
-                <textarea asp-for="Description" class="form-control" rows="6" placeholder="Describe the project, its goals, tech stack, etc. All agents will see this."></textarea>
+                <textarea asp-for="Description" class="form-control" rows="6" placeholder="Describe the project, its goals, tech stack, etc. All team members will see this."></textarea>
             </div>
 
             <button type="submit" class="btn btn-primary">Save</button>

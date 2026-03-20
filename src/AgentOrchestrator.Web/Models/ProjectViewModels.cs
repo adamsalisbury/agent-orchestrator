@@ -2,6 +2,7 @@ namespace AgentOrchestrator.Web.Models;
 
 public class ProjectViewModel
 {
+    public string CompanyName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public List<AgentViewModel> Agents { get; set; } = new();
@@ -11,6 +12,7 @@ public class ProjectViewModel
 
 public class EditProjectViewModel
 {
+    public string CompanyName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 }

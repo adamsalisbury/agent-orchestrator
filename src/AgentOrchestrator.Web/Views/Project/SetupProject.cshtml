@@ -1,0 +1,57 @@
+@model AgentOrchestrator.Web.Models.EditProjectViewModel
+@{
+    ViewData["Title"] = "Project Details";
+    ViewData["HideNav"] = true;
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-6">
+        <!-- Wizard Progress -->
+        <div class="d-flex align-items-center mb-4">
+            <div class="wizard-step completed">
+                <span class="wizard-number">&#10003;</span>
+                <span class="wizard-label">Company</span>
+            </div>
+            <div class="wizard-connector completed"></div>
+            <div class="wizard-step active">
+                <span class="wizard-number">2</span>
+                <span class="wizard-label">Project</span>
+            </div>
+            <div class="wizard-connector"></div>
+            <div class="wizard-step">
+                <span class="wizard-number">3</span>
+                <span class="wizard-label">Build Team</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-1">Project Details</h3>
+                <p class="text-muted mb-4">Tell us what <strong>@Model.CompanyName</strong> is building. This context is shared with all agents.</p>
+
+                <form asp-action="SetupProject" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"><strong>Project Name</strong></label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g. CloudSync Platform" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label"><strong>Project Description</strong></label>
+                        <textarea asp-for="Description" class="form-control" rows="6" placeholder="Describe the project, its goals, target audience, tech stack, and any other context that will help your agents understand what they're working on..."></textarea>
+                        <div class="form-text">The more detail you provide, the better your auto-generated team will be.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Setup" class="btn btn-outline-secondary">&larr; Back</a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            Next: Build Team &rarr;
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -39,7 +39,7 @@ public class FileProjectRepository : IProjectRepository
         await _lock.WaitAsync();
         try
         {
-            var content = $"---\nname: {project.Name}\n---\n\n{project.Description}";
+            var content = $"---\ncompanyName: {project.CompanyName}\nname: {project.Name}\n---\n\n{project.Description}";
             await File.WriteAllTextAsync(Path.Combine(_projectDir, "project.md"), content);
         }
         finally
@@ -98,6 +98,7 @@ public class FileProjectRepository : IProjectRepository
 
         return new Project
         {
+            CompanyName = meta.GetValueOrDefault("companyName", ""),
             Name = meta.GetValueOrDefault("name", ""),
             Description = body
         };

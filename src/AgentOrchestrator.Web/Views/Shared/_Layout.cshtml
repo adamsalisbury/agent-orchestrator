@@ -1,48 +1,73 @@
+@inject AgentOrchestrator.Core.Interfaces.IProjectRepository ProjectRepo
+@{
+    var project = await ProjectRepo.GetAsync();
+    var companyName = project?.CompanyName ?? "";
+    var isConfigured = project != null;
+    var hideNav = ViewData["HideNav"] as bool? == true;
+    var titleSuffix = string.IsNullOrEmpty(companyName) ? "Agent Studio" : $"Agent Studio - {companyName}";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Adam's Agent Studio</title>
+    <title>@ViewData["Title"] - @titleSuffix</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AgentOrchestrator.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <script>
-        // Apply saved theme before paint to prevent flash
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
     </script>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <!-- Level 1: Title bar -->
+        <nav class="navbar navbar-dark bg-dark border-bottom py-1">
             <div class="container">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Adam's Agent Studio</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    @titleSuffix
+                </a>
+                <button class="navbar-toggler d-sm-none" type="button" data-bs-toggle="collapse" data-bs-target="#navContent"
+                        aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Agents" asp-action="Index">Agents</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Project" asp-action="Index">Project</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Agents" asp-action="Communication">Communication</a>
-                        </li>
-                    </ul>
-                    <button id="theme-toggle" class="btn btn-sm btn-outline-light ms-2" type="button" title="Toggle dark/light mode">
-                        <span id="theme-icon-light" style="display:none;">&#9788;</span>
-                        <span id="theme-icon-dark">&#9790;</span>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#resetModal" title="Reset Environment">
-                        Reset
-                    </button>
-                </div>
             </div>
         </nav>
+
+        @if (isConfigured && !hideNav)
+        {
+            <!-- Level 2: Navigation -->
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom box-shadow mb-3 py-0">
+                <div class="container">
+                    <div class="collapse navbar-collapse d-sm-flex justify-content-between" id="navContent">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Project" asp-action="Index">Project</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Agents" asp-action="Index">Team</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Agents" asp-action="Communication">Communication</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center py-1">
+                            <button id="theme-toggle" class="btn btn-sm btn-outline-light me-2" type="button" title="Toggle dark/light mode">
+                                <span id="theme-icon-light" style="display:none;">&#9788;</span>
+                                <span id="theme-icon-dark">&#9790;</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#resetModal" title="Reset Environment">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        }
+        else
+        {
+            <div class="mb-3"></div>
+        }
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -59,7 +84,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>This will <strong>permanently delete all agents and their messages</strong>.</p>
+                    <p>This will <strong>permanently delete all agents, messages, and project data</strong>.</p>
                     <p class="mb-0">Are you sure you want to continue?</p>
                 </div>
                 <div class="modal-footer">
@@ -74,8 +99,8 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Adam's Agent Studio
+        <div class="container text-center">
+            <small>&copy; 2026 - Adam Salisbury</small>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

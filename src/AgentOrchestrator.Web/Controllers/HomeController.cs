@@ -7,12 +7,10 @@ namespace AgentOrchestrator.Web.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
     private readonly IProjectRepository _projectRepo;
 
-    public HomeController(ILogger<HomeController> logger, IProjectRepository projectRepo)
+    public HomeController(IProjectRepository projectRepo)
     {
-        _logger = logger;
         _projectRepo = projectRepo;
     }
 
@@ -22,12 +20,7 @@ public class HomeController : Controller
         if (project == null)
             return RedirectToAction("Setup", "Project");
 
-        return View();
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
+        return RedirectToAction("Index", "Project");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,17 +1,17 @@
 @model List<AgentOrchestrator.Web.Models.AgentViewModel>
 @{
-    ViewData["Title"] = "Agents";
+    ViewData["Title"] = "Team";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Agents</h2>
-    <a asp-action="Create" class="btn btn-primary">Add Agent</a>
+    <h2>Team</h2>
+    <a asp-action="Create" class="btn btn-primary">Add Team Member</a>
 </div>
 
 @if (!Model.Any())
 {
     <div class="alert alert-info">
-        No agents yet. Click <strong>Add Agent</strong> to create one.
+        No team members yet. Click <strong>Add Team Member</strong> to create one.
     </div>
 }
 else

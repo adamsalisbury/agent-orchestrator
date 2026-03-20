@@ -4,25 +4,19 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Project</h2>
+    <div>
+        <h2 class="mb-0">@Model.Name</h2>
+        <small class="text-muted">@Model.CompanyName</small>
+    </div>
     <a asp-action="Edit" class="btn btn-outline-secondary">Edit</a>
 </div>
 
-@if (!Model.IsConfigured)
-{
-    <div class="alert alert-warning">
-        No project configured yet. <a asp-action="Edit" class="alert-link">Set up your project</a> to give your agents context about what they're building.
+<div class="card mb-3">
+    <div class="card-header"><strong>Description</strong></div>
+    <div class="card-body">
+        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.Description</pre>
     </div>
-}
-else
-{
-    <div class="card mb-3">
-        <div class="card-header"><strong>@Model.Name</strong></div>
-        <div class="card-body">
-            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.Description</pre>
-        </div>
-    </div>
-}
+</div>
 
 <!-- Team -->
 <div class="card mb-3">
@@ -30,7 +24,7 @@ else
     <div class="card-body">
         @if (!Model.Agents.Any())
         {
-            <p class="text-muted mb-0">No agents yet. <a asp-controller="Agents" asp-action="Create">Create an agent</a> to add to the team.</p>
+            <p class="text-muted mb-0">No team members yet. <a asp-controller="Agents" asp-action="Create">Add a team member</a>.</p>
         }
         else
         {
@@ -45,8 +39,8 @@ else
                                 <strong>@agent.Name</strong>
                                 <small class="text-muted d-block">@agent.JobTitle</small>
                             </div>
-                            <a asp-controller="Agents" asp-action="Compose" asp-route-agentId="@agent.Id"
-                               class="btn btn-sm btn-outline-primary">Message</a>
+                            <a asp-controller="Agents" asp-action="Detail" asp-route-id="@agent.Id"
+                               class="btn btn-sm btn-outline-primary">View</a>
                         </div>
                     </div>
                 }
@@ -61,7 +55,7 @@ else
     <div class="card-body">
         @if (!Model.SharedFiles.Any())
         {
-            <p class="text-muted mb-0">No shared files yet. Agents can add files to the shared directory during conversations.</p>
+            <p class="text-muted mb-0">No shared files yet. Team members can add files to the shared directory during conversations.</p>
         }
         else
         {
