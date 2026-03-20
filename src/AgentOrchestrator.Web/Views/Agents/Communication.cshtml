@@ -5,9 +5,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3 page-header">
     <h2>Communication</h2>
-    <span class="text-muted">@Model.Messages.Count messages</span>
+    <span class="text-muted" id="msg-count">@Model.Messages.Count messages</span>
 </div>
 
+<div id="communication-content">
 @if (!Model.Messages.Any())
 {
     <div class="alert alert-info">No messages yet.</div>
@@ -93,21 +94,26 @@ else
         </table>
     </div>
 }
+</div>
 
 @section Scripts {
-    <script src="~/lib/microsoft-signalr/signalr.min.js"></script>
     <script>
-        var connection = new signalR.HubConnectionBuilder()
-            .withUrl("/hubs/notifications")
-            .withAutomaticReconnect()
-            .build();
-
-        connection.on("MessageCompleted", function () {
-            window.location.reload();
-        });
-
-        connection.start().catch(function (err) {
-            console.error("SignalR connection error:", err);
-        });
+        setInterval(function () {
+            fetch(window.location.href)
+                .then(function (res) { return res.text(); })
+                .then(function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, "text/html");
+                    var newContent = doc.getElementById("communication-content");
+                    var newCount = doc.getElementById("msg-count");
+                    if (newContent) {
+                        document.getElementById("communication-content").innerHTML = newContent.innerHTML;
+                    }
+                    if (newCount) {
+                        document.getElementById("msg-count").innerHTML = newCount.innerHTML;
+                    }
+                })
+                .catch(function () {});
+        }, 5000);
     </script>
 }

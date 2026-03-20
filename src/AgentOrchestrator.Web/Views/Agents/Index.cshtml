@@ -8,6 +8,7 @@
     <a asp-action="Create" class="btn btn-primary">Add Team Member</a>
 </div>
 
+<div id="team-grid">
 @if (!Model.Any())
 {
     <div class="alert alert-info">
@@ -19,8 +20,9 @@ else
     <div class="row">
         @foreach (var agent in Model)
         {
+            var pulseClass = agent.IsBusy ? (agent.IsBlocked ? "card-pulse-blocked" : "card-pulse-busy") : "";
             <div class="col-12 col-md-4 mb-3">
-                <div class="card h-100">
+                <div class="card h-100 @pulseClass">
                     <div class="card-body d-flex">
                         <div class="flex-shrink-0 me-3 position-relative">
                             <img src="@Url.Action("Avatar", "Agents", new { id = agent.Id })"
@@ -78,4 +80,23 @@ else
             </div>
         }
     </div>
+}
+</div>
+
+@section Scripts {
+    <script>
+        setInterval(function () {
+            fetch(window.location.href)
+                .then(function (res) { return res.text(); })
+                .then(function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, "text/html");
+                    var newGrid = doc.getElementById("team-grid");
+                    if (newGrid) {
+                        document.getElementById("team-grid").innerHTML = newGrid.innerHTML;
+                    }
+                })
+                .catch(function () {});
+        }, 5000);
+    </script>
 }

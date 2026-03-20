@@ -372,6 +372,27 @@ body.dark-mode .workspace-nav .list-group-item.active {
   border-color: #0d6efd;
 }
 
+/* ---- Agent card pulsate animations ---- */
+@keyframes pulse-busy {
+  0%   { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+  50%  { box-shadow: 0 0 12px 4px rgba(220, 53, 69, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+}
+
+@keyframes pulse-blocked {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+  50%  { box-shadow: 0 0 12px 4px rgba(255, 193, 7, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+}
+
+.card-pulse-busy {
+  animation: pulse-busy 2s ease-in-out infinite;
+}
+
+.card-pulse-blocked {
+  animation: pulse-blocked 2s ease-in-out infinite;
+}
+
 /* Mobile responsive tables */
 @media (max-width: 767.98px) {
   .table-responsive-mobile thead { display: none; }
