@@ -310,6 +310,14 @@ public class ThreadOrchestrationService
     {
         var sb = new StringBuilder();
 
+        // Company and client context
+        var companyName = !string.IsNullOrWhiteSpace(project?.CompanyName) ? project.CompanyName : "the company";
+        sb.AppendLine($"You are an employee of {companyName}, a software development company.");
+        sb.AppendLine("The person sending you messages (\"User\") is the company's client. They have commissioned the project described below.");
+        sb.AppendLine("The client typically communicates with the CEO, but may also speak directly with other team members when needed.");
+        sb.AppendLine("Treat the client professionally — they are paying for your work. Deliver high-quality results, ask clarifying questions when requirements are unclear, and keep them informed of progress.");
+        sb.AppendLine();
+
         if (agent != null && !string.IsNullOrWhiteSpace(agent.Persona))
         {
             sb.AppendLine("You are operating under the following persona:");
@@ -333,6 +341,7 @@ public class ThreadOrchestrationService
             if (agent.IsCeo)
             {
                 sb.AppendLine("You are the CEO of this organisation. You oversee all operations and set strategic direction.");
+                sb.AppendLine("The client will primarily communicate with you. It is your responsibility to understand their requirements, break work down, and delegate to your team.");
             }
 
             // Manager info
