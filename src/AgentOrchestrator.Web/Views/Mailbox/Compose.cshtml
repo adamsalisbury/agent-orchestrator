@@ -1,0 +1,60 @@
+@model AgentOrchestrator.Web.Models.ComposeViewModel
+@{
+    ViewData["Title"] = "New Request";
+}
+
+<h2>New Request</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form asp-action="Compose" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="AgentId" class="form-label"><strong>To Agent</strong></label>
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-grow-1">
+                        <select asp-for="AgentId" class="form-select" id="agent-select">
+                            <option value="">-- Select an agent --</option>
+                            @foreach (var agent in Model.AvailableAgents)
+                            {
+                                <option value="@agent.Id">@agent.Name (@agent.JobTitle)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AgentId" class="text-danger"></span>
+                    </div>
+                    <div id="agent-avatar" style="display:none;">
+                        <img id="agent-avatar-img" src="" alt="" width="48" height="48" class="rounded" />
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label"><strong>Message</strong></label>
+                <textarea asp-for="Content" class="form-control" rows="6" placeholder="Type your message..."></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+            <p class="text-muted small">A new thread ID will be generated automatically.</p>
+            <button type="submit" class="btn btn-primary">Send Request</button>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("agent-select").addEventListener("change", function () {
+            var avatarDiv = document.getElementById("agent-avatar");
+            var avatarImg = document.getElementById("agent-avatar-img");
+            if (this.value) {
+                avatarImg.src = "@Url.Action("Avatar", "Mailbox")/" + this.value;
+                avatarDiv.style.display = "";
+            } else {
+                avatarDiv.style.display = "none";
+            }
+        });
+        // Show avatar on page load if agent pre-selected
+        (function() {
+            var select = document.getElementById("agent-select");
+            if (select.value) { select.dispatchEvent(new Event("change")); }
+        })();
+    </script>
+}

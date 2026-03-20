@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <rect width="200" height="200" rx="20" fill="#E8F0FD"/>
+
+  <!-- Ears (slightly larger than normal) -->
+  <ellipse cx="38" cy="115" rx="15" ry="17" fill="#F5C5A3"/>
+  <ellipse cx="162" cy="115" rx="15" ry="17" fill="#F5C5A3"/>
+  <ellipse cx="38" cy="115" rx="10" ry="12" fill="#E8B088"/>
+  <ellipse cx="162" cy="115" rx="10" ry="12" fill="#E8B088"/>
+
+  <!-- Face (oval, attractive proportions) -->
+  <ellipse cx="100" cy="115" rx="56" ry="64" fill="#F5C5A3"/>
+
+  <!-- Jawline definition -->
+  <path d="M50 130 Q100 185 150 130" fill="none" stroke="#E0AA85" stroke-width="1" opacity="0.4"/>
+
+  <!-- Eyes - whites -->
+  <ellipse cx="76" cy="106" rx="11" ry="12" fill="white"/>
+  <ellipse cx="124" cy="106" rx="11" ry="12" fill="white"/>
+
+  <!-- Eyes - brown iris -->
+  <circle cx="76" cy="106" r="7" fill="#6B4226"/>
+  <circle cx="124" cy="106" r="7" fill="#6B4226"/>
+
+  <!-- Eyes - darker ring -->
+  <circle cx="76" cy="106" r="7" fill="none" stroke="#4A2E15" stroke-width="1"/>
+  <circle cx="124" cy="106" r="7" fill="none" stroke="#4A2E15" stroke-width="1"/>
+
+  <!-- Eyes - pupil -->
+  <circle cx="76" cy="106" r="3.5" fill="#1A1A2E"/>
+  <circle cx="124" cy="106" r="3.5" fill="#1A1A2E"/>
+
+  <!-- Eyes - highlight -->
+  <circle cx="79" cy="104" r="2.5" fill="white" opacity="0.75"/>
+  <circle cx="127" cy="104" r="2.5" fill="white" opacity="0.75"/>
+
+  <!-- Eyebrows (strong, dark) -->
+  <path d="M62 94 Q76 86 92 93" fill="none" stroke="#1A1A2E" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M108 93 Q124 86 138 94" fill="none" stroke="#1A1A2E" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <path d="M95 112 Q100 125 105 112" fill="none" stroke="#D49670" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Mouth (confident smile) -->
+  <path d="M82 135 Q100 148 118 135" fill="none" stroke="#C48B6A" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Beard (short dark beard covering jaw and chin) -->
+  <path d="M52 128 Q52 165 100 175 Q148 165 148 128" fill="#2C1810" opacity="0.85"/>
+  <!-- Beard texture lines -->
+  <path d="M65 140 Q100 172 135 140" fill="none" stroke="#1A1008" stroke-width="0.5" opacity="0.3"/>
+  <path d="M60 145 Q100 178 140 145" fill="none" stroke="#1A1008" stroke-width="0.5" opacity="0.3"/>
+  <!-- Mustache -->
+  <path d="M82 132 Q90 126 100 130 Q110 126 118 132" fill="#2C1810"/>
+  <!-- Mouth visible through beard -->
+  <path d="M88 137 Q100 143 112 137" fill="#C47060" opacity="0.7"/>
+
+  <!-- Hair (short, dark) -->
+  <ellipse cx="100" cy="70" rx="62" ry="28" fill="#1A1A2E"/>
+  <rect x="40" y="70" width="120" height="24" fill="#1A1A2E"/>
+  <!-- Hair texture -->
+  <ellipse cx="100" cy="62" rx="55" ry="20" fill="#252535"/>
+  <!-- Slight widow's peak -->
+  <path d="M70 78 Q100 68 130 78" fill="#1A1A2E"/>
+</svg>

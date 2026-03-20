@@ -1,0 +1,31 @@
+@model AgentOrchestrator.Web.Models.CreateAgentViewModel
+@{
+    ViewData["Title"] = "Add Agent";
+}
+
+<h2>Add Agent</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"><strong>Name</strong></label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. Brian" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="JobTitle" class="form-label"><strong>Job Title</strong></label>
+                <input asp-for="JobTitle" class="form-control" placeholder="e.g. UI/UX Designer" />
+                <span asp-validation-for="JobTitle" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Persona" class="form-label"><strong>Persona</strong></label>
+                <textarea asp-for="Persona" class="form-control" rows="8" placeholder="Describe how this agent should behave..."></textarea>
+                <span asp-validation-for="Persona" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Agent</button>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>

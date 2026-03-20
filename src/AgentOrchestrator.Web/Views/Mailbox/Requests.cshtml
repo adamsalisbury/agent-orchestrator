@@ -1,0 +1,111 @@
+@model AgentOrchestrator.Web.Models.RequestsViewModel
+@{
+    ViewData["Title"] = $"Requests - {Model.AgentName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3 page-header">
+    <div class="d-flex align-items-center">
+        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.AgentId })"
+             alt="@Model.AgentName" width="48" height="48" class="rounded me-3" />
+        <h2 class="mb-0">Requests <small class="text-muted d-none d-sm-inline">@Model.AgentName</small></h2>
+    </div>
+    <div class="page-header-actions d-flex align-items-center">
+        <a asp-action="Compose" asp-route-agentId="@Model.AgentId" class="btn btn-primary me-2">New Request</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Back to Agents</a>
+    </div>
+</div>
+
+@if (!Model.Threads.Any())
+{
+    <div class="alert alert-info">
+        No requests yet for this agent. Click <strong>New Request</strong> to send a message.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-hover table-responsive-mobile">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 100px;">Thread</th>
+                <th style="width: 80px;">Messages</th>
+                <th>Latest</th>
+                <th style="width: 100px;">Status</th>
+                <th style="width: 170px;">Last Activity</th>
+                <th style="width: 80px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var thread in Model.Threads)
+            {
+                <tr id="thread-row-@thread.ThreadId" class="@(thread.HasPending ? "table-warning" : "")">
+                    <td data-label="Thread"><code>@thread.ThreadId</code></td>
+                    <td data-label="Messages" class="msg-count">@thread.MessageCount</td>
+                    <td data-label="Latest" class="msg-preview">
+                        @if (thread.HasPending)
+                        {
+                            <span class="text-muted pending-indicator">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                Waiting for response...
+                            </span>
+                        }
+                        else
+                        {
+                            @thread.LastMessagePreview
+                        }
+                    </td>
+                    <td data-label="Status" class="msg-status">
+                        @if (thread.HasPending)
+                        {
+                            <span class="badge bg-warning text-dark">Processing</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Complete</span>
+                        }
+                    </td>
+                    <td data-label="Last Activity" class="msg-activity">@thread.LastActivity.ToLocalTime().ToString("g")</td>
+                    <td>
+                        <a asp-action="Thread" asp-route-agentId="@Model.AgentId" asp-route-threadId="@thread.ThreadId" class="btn btn-sm btn-outline-secondary w-100">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    <script src="~/lib/microsoft-signalr/signalr.min.js"></script>
+    <script>
+        const currentAgentId = "@Model.AgentId";
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/notifications")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("MessageCompleted", function (data) {
+            if (data.agentId !== currentAgentId) return;
+
+            const row = document.getElementById("thread-row-" + data.threadId);
+            if (!row) return;
+
+            row.classList.remove("table-warning");
+
+            const preview = row.querySelector(".msg-preview");
+            const content = data.content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            preview.textContent = content.length > 100 ? content.substring(0, 100) + "..." : content;
+
+            const status = row.querySelector(".msg-status");
+            status.innerHTML = data.status === "Completed"
+                ? '<span class="badge bg-success">Complete</span>'
+                : '<span class="badge bg-danger">Failed</span>';
+
+            const activity = row.querySelector(".msg-activity");
+            activity.textContent = data.sentAt;
+        });
+
+        connection.start().catch(function (err) {
+            console.error("SignalR connection error:", err);
+        });
+    </script>
+}

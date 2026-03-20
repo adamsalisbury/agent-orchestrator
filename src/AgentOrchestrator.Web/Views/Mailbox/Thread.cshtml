@@ -1,0 +1,120 @@
+@model AgentOrchestrator.Web.Models.ThreadViewModel
+@{
+    ViewData["Title"] = $"Thread {Model.ThreadId}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3 page-header">
+    <div class="d-flex align-items-center">
+        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.AgentId })"
+             alt="@Model.AgentName" width="40" height="40" class="rounded me-2" />
+        <h2 class="mb-0">Thread <code>@Model.ThreadId</code> <small class="text-muted d-none d-sm-inline">@Model.AgentName</small></h2>
+    </div>
+    <div class="page-header-actions">
+        <a asp-action="Requests" asp-route-id="@Model.AgentId" class="btn btn-outline-secondary">Back to Requests</a>
+    </div>
+</div>
+
+<div id="messages-container">
+@if (!Model.Messages.Any())
+{
+    <div class="alert alert-info">No messages in this thread.</div>
+}
+else
+{
+    @foreach (var msg in Model.Messages)
+    {
+        var isUser = msg.IsOutbound;
+        var isConsultation = msg.IsConsultation;
+        var senderName = isUser ? "You" : (isConsultation ? msg.FromAgentName : Model.AgentName);
+        var avatarId = isConsultation ? msg.FromAgentId : Model.AgentId;
+        var displayAvatarId = isUser ? "adam" : avatarId;
+
+        var cardBorder = msg.Status == "Failed" ? "border-danger"
+            : (isUser ? "border-primary"
+            : (isConsultation ? "border-info" : "border-success"));
+        var headerBg = msg.IsPending ? "bg-secondary text-white"
+            : (msg.Status == "Failed" ? "bg-danger text-white"
+            : (isUser ? "bg-primary text-white"
+            : (isConsultation ? "bg-info text-white" : "bg-success text-white")));
+
+        <div class="card mb-3 @cardBorder" id="msg-@msg.MessageId" data-message-number="@msg.MessageNumber" data-status="@msg.Status">
+            <div class="card-header @headerBg d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    @if (displayAvatarId != null)
+                    {
+                        <img src="@Url.Action("Avatar", "Mailbox", new { id = displayAvatarId })"
+                             alt="@senderName" width="24" height="24" class="rounded me-2" />
+                    }
+                    <strong>@senderName</strong>
+                    @if (isConsultation)
+                    {
+                        <span class="badge bg-light text-dark ms-2">Consultation</span>
+                    }
+                    <span class="ms-2 opacity-75 d-none d-sm-inline">@msg.MessageId</span>
+                </div>
+                <div>
+                    @if (msg.IsPending)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span class="badge bg-light text-dark">@msg.Status</span>
+                    }
+                    else
+                    {
+                        <small>@msg.SentAt.ToLocalTime().ToString("G")</small>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                @if (msg.IsPending)
+                {
+                    <p class="text-muted mb-0">Waiting for @senderName to respond...</p>
+                }
+                else
+                {
+                    <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@msg.Content</pre>
+                }
+            </div>
+        </div>
+    }
+}
+</div>
+
+<div id="reply-form" style="@(Model.HasPendingResponse ? "display:none;" : "")">
+    <div class="card">
+        <div class="card-header"><strong>Reply</strong></div>
+        <div class="card-body">
+            <form asp-action="Reply" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="agentId" value="@Model.AgentId" />
+                <input type="hidden" name="threadId" value="@Model.ThreadId" />
+                <div class="mb-3">
+                    <textarea name="content" class="form-control" rows="4" placeholder="Type your reply..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Reply</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft-signalr/signalr.min.js"></script>
+    <script>
+        const currentThreadId = "@Model.ThreadId";
+        const currentAgentId = "@Model.AgentId";
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/notifications")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("MessageCompleted", function (data) {
+            if (data.agentId !== currentAgentId || data.threadId !== currentThreadId) return;
+            // Reload to pick up all changes (new consultation messages, updated cards, etc.)
+            window.location.reload();
+        });
+
+        connection.start().catch(function (err) {
+            console.error("SignalR connection error:", err);
+        });
+    </script>
+}

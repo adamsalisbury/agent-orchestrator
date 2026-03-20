@@ -1,0 +1,79 @@
+@model AgentOrchestrator.Web.Models.ViewMessageViewModel
+@{
+    ViewData["Title"] = $"Message {Model.MessageId}";
+}
+
+<div class="mb-3">
+    <a asp-action="AllMessages" class="btn btn-outline-secondary">
+        &larr; Back to All Messages
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <!-- Message header (Outlook-style) -->
+    <div class="card-header bg-white border-bottom py-3">
+        <div class="row align-items-start">
+            <!-- From -->
+            <div class="col-12 col-md-6 mb-2 mb-md-0">
+                <div class="d-flex align-items-center mb-2">
+                    @if (Model.FromAvatarId != null)
+                    {
+                        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.FromAvatarId })"
+                             alt="@Model.FromName" width="48" height="48" class="rounded me-3" />
+                    }
+                    else
+                    {
+                        <span class="d-inline-flex align-items-center justify-content-center rounded me-3 bg-primary text-white"
+                              style="width:48px;height:48px;font-size:20px;font-weight:bold;">Y</span>
+                    }
+                    <div>
+                        <div class="fw-bold fs-5">@Model.FromName</div>
+                        <small class="text-muted">Sender</small>
+                    </div>
+                </div>
+            </div>
+            <!-- Date & ID -->
+            <div class="col-12 col-md-6 text-md-end">
+                <div class="text-muted small">@Model.SentAtUtc.ToString("dddd, d MMMM yyyy HH:mm:ss") UTC</div>
+                <code class="small">@Model.MessageId</code>
+            </div>
+        </div>
+
+        <!-- To line -->
+        <div class="border-top pt-2 mt-2">
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-2 fw-semibold">To:</span>
+                @if (Model.ToAvatarId != null)
+                {
+                    <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.ToAvatarId })"
+                         alt="@Model.ToName" width="24" height="24" class="rounded me-2" />
+                }
+                else
+                {
+                    <span class="d-inline-flex align-items-center justify-content-center rounded me-2 bg-primary text-white"
+                          style="width:24px;height:24px;font-size:12px;font-weight:bold;">Y</span>
+                }
+                <span>@Model.ToName</span>
+            </div>
+        </div>
+
+        <!-- Thread reference -->
+        <div class="border-top pt-2 mt-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted me-2 fw-semibold">Thread:</span>
+                    <code>@Model.ThreadId</code>
+                </div>
+                <a asp-action="Thread"
+                   asp-route-agentId="@Model.AgentId"
+                   asp-route-threadId="@Model.ThreadId"
+                   class="btn btn-sm btn-outline-primary">Open Thread</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message body -->
+    <div class="card-body message-body p-4">
+        <pre class="mb-0" style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 0.95rem; line-height: 1.6;">@Model.Content</pre>
+    </div>
+</div>

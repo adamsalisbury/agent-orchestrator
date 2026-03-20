@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mt-4">
+    <h1 class="display-5">Adam's Agent Studio</h1>
+    <p class="lead">Create agents and send them requests.</p>
+    <a asp-controller="Mailbox" asp-action="Compose" class="btn btn-primary btn-lg mt-3">New Request</a>
+    <a asp-controller="Mailbox" asp-action="Index" class="btn btn-outline-secondary btn-lg mt-3 ms-2">View Agents</a>
+</div>

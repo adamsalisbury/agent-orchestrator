@@ -1,0 +1,95 @@
+@model AgentOrchestrator.Web.Models.AllMessagesViewModel
+@{
+    ViewData["Title"] = "All Messages";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3 page-header">
+    <h2>All Messages</h2>
+    <span class="text-muted">@Model.Messages.Count messages</span>
+</div>
+
+@if (!Model.Messages.Any())
+{
+    <div class="alert alert-info">No messages yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-sm table-responsive-mobile align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 170px;">Date/Time (UTC)</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th style="width: 110px;">Message ID</th>
+                    <th class="d-none d-lg-table-cell">Preview</th>
+                    <th style="width: 60px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var msg in Model.Messages)
+                {
+                    <tr class="@(msg.IsPending ? "table-warning" : "")">
+                        <td data-label="Date/Time">
+                            <small>@msg.SentAtUtc.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                        </td>
+                        <td data-label="From">
+                            <div class="d-flex align-items-center">
+                                @if (msg.FromAvatarId != null)
+                                {
+                                    <img src="@Url.Action("Avatar", "Mailbox", new { id = msg.FromAvatarId })"
+                                         alt="" width="24" height="24" class="rounded me-2 flex-shrink-0" />
+                                }
+                                else
+                                {
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded me-2 flex-shrink-0 bg-primary text-white"
+                                          style="width:24px;height:24px;font-size:12px;font-weight:bold;">Y</span>
+                                }
+                                <span class="text-truncate" style="max-width: 160px;">@msg.FromName</span>
+                            </div>
+                        </td>
+                        <td data-label="To">
+                            <div class="d-flex align-items-center">
+                                @if (msg.ToAvatarId != null)
+                                {
+                                    <img src="@Url.Action("Avatar", "Mailbox", new { id = msg.ToAvatarId })"
+                                         alt="" width="24" height="24" class="rounded me-2 flex-shrink-0" />
+                                }
+                                else
+                                {
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded me-2 flex-shrink-0 bg-primary text-white"
+                                          style="width:24px;height:24px;font-size:12px;font-weight:bold;">Y</span>
+                                }
+                                <span class="text-truncate" style="max-width: 160px;">@msg.ToName</span>
+                            </div>
+                        </td>
+                        <td data-label="ID"><code class="small">@msg.MessageId</code></td>
+                        <td data-label="Preview" class="d-none d-lg-table-cell">
+                            @if (msg.IsPending)
+                            {
+                                <span class="text-muted fst-italic">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    Pending...
+                                </span>
+                            }
+                            else
+                            {
+                                <small class="text-muted text-truncate d-inline-block" style="max-width: 300px;">@msg.ContentPreview</small>
+                            }
+                        </td>
+                        <td>
+                            @if (!msg.IsPending)
+                            {
+                                <a asp-action="ViewMessage"
+                                   asp-route-agentId="@msg.AgentId"
+                                   asp-route-threadId="@msg.ThreadId"
+                                   asp-route-messageNumber="@msg.MessageNumber"
+                                   class="btn btn-sm btn-outline-secondary">View</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

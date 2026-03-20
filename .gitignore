@@ -1,0 +1,15 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.vs/
+
+## Data
+App_Data/
+
+## IDE
+.idea/
+.vscode/
+*.swp
