@@ -21,7 +21,7 @@ The domain layer with no external dependencies. Contains:
 - **Services**:
   - `AgentService` — persona generation, skills generation, role detection (developer/CEO)
   - `TeamService` — org chart generation via Claude Code, agent-from-role creation with hierarchy resolution
-  - `ThreadOrchestrationService` — message queuing, background processing, prompt construction, delegation handling
+  - `ThreadOrchestrationService` — message queuing, background processing, prompt construction, delegation handling, live task status tracking
 - **Prompts** — static class centralising all prompt templates as constants and format methods
 
 ### AgentOrchestrator.Core.Tests
@@ -114,6 +114,7 @@ App_Data/
 ├── agent-{id}/
 │   ├── persona.md          # Agent metadata (including role flags, reporting line)
 │   ├── avatar.svg          # Generated avatar with role badge
+│   ├── current-task.md     # Transient — present only while agent is busy/blocked
 │   ├── workspace/          # Developer agents only — personal code workspace
 │   └── threads/
 │       └── thread-{id}/

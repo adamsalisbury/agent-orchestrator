@@ -11,6 +11,9 @@ A multi-agent orchestration platform that enables creating, managing, and coordi
 - **Agent-to-agent delegation** — agents delegate tasks through the org chart, up to 5 levels deep
 - **Threaded conversations** — send messages to agents and track multi-turn conversations
 - **Real-time updates** — SignalR pushes live status changes as agents process requests
+- **Agent profiles** — each agent has a detail page with an ID badge, persona, skills, reporting structure, and live task status
+- **Live task status** — agents report what they're currently working on and who they're blocked by, visible on cards and profile pages
+- **Developer peer collaboration** — developers are aware of each other and use the shared directory to coordinate (e.g., agreeing on API contracts)
 - **Role badges** — developer agents display a `</>` badge, the CEO gets a gold star, both on avatars and in the UI
 - **Dark/light mode** — theme toggle with persistent preference
 

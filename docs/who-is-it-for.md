@@ -7,8 +7,9 @@ Agent Orchestrator is designed for anyone who wants to explore multi-agent AI wo
 ### Developers and Engineers
 
 - Set up a team of specialised AI agents to assist with different aspects of a project
-- Have a "backend engineer" agent handle API design while a "frontend developer" agent works on UI — each in their own workspace
+- Have a "backend engineer" agent handle API design while a "frontend developer" agent works on UI — each in their own workspace, coordinating via shared API contracts
 - Browse the code developers write directly in the workspace file viewer, or open the directories in VS Code
+- Monitor what each agent is working on in real time via their profile pages
 
 ### Technical Leads and Architects
 

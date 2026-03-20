@@ -31,20 +31,45 @@ Use the inline form to add individual agents by name, job title, and purpose. Ea
 
 Once your team is ready, click **Finish Setup** to proceed to the home page.
 
+## Agent Profiles
+
+Each agent has a detail page accessible by clicking **View** on the Agents page.
+
+The profile shows:
+
+- **ID badge** — styled like an employee badge with the project name, avatar, name, job title, and joined date
+- **Status** — Idle, Busy, or Blocked, with a description of what the agent is currently working on
+- **General information** — name, job title, joined date, agent ID, role type
+- **Persona** — the full generated persona text
+- **Skills** — all tagged capabilities
+- **Reporting structure** — who they report to and their direct reports
+
+From the profile page you can access **Communication** (threads), **Workspace** (developers only), and **Send Message**.
+
 ## Sending Messages
 
-1. From the **Agents** page, click **Threads** on any agent
-2. Click **New Message** to compose a message to that agent
-3. Alternatively, use the **Compose** page to select any agent from a dropdown
+1. From the **Agents** page, click **View** on any agent to open their profile
+2. Click **Communication** to see their threads, then **New Message**
+3. Or click **Send Message** directly from the profile page
 
 The agent processes the message asynchronously. For the CEO, try sending a high-level directive — they'll delegate tasks down the org chart to the appropriate team members.
+
+## Live Task Status
+
+While agents are working, the Agents page and agent profiles show live status:
+
+- **Busy** — the agent is actively processing a request, with a description of the task
+- **Blocked** — the agent has delegated to another team member and is waiting for their response
+- **Idle** — the agent has no pending work
+
+Status is tracked via a `current-task.md` file that is created when processing starts and removed when the agent finishes.
 
 ## Viewing Conversations
 
 ### Agent Threads
 
 - Navigate to **Agents** from the top navigation
-- Click **Threads** on an agent to see all their conversation threads
+- Click **View** on an agent, then **Communication** to see their threads
 - Each thread shows message count, preview, status, and last activity
 
 ### Thread View
@@ -77,10 +102,14 @@ Delegation is limited to 5 levels deep to prevent infinite loops.
 
 Developer agents write code in personal workspace directories.
 
+### Developer Peer Collaboration
+
+Developers are aware of each other and are instructed to use the shared directory (`../shared/`) to coordinate. For example, a frontend developer and backend developer can agree on API contracts by writing shared specification files that both reference.
+
 ### Browsing a Workspace
 
-1. Navigate to **Agents**
-2. Click the **`</>` Workspace** button on any developer agent
+1. Navigate to **Agents**, click **View** on a developer agent
+2. Click the **`</>` Workspace** button
 3. The workspace browser shows:
    - **Left panel (25%)** — directory and file navigator with `..` to go up (capped at the workspace root)
    - **Right panel (75%)** — plain text file viewer for the selected file
@@ -93,7 +122,8 @@ Developer workspaces are stored at `App_Data/agent-{id}/workspace/`. You can ope
 
 - **CEO** agents display a gold star badge on their avatar and a "CEO" label in the UI
 - **Developer** agents display a `</>` badge on their avatar and a code label in the UI
-- Each agent card shows who they report to
+- Each agent card shows a live status badge (Idle / Busy / Blocked)
+- Agent profile pages display an ID badge and full reporting structure
 - The **Project** page shows the full team roster
 
 ## Real-Time Updates

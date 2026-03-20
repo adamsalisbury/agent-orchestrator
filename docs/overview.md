@@ -17,6 +17,7 @@ An agent is an AI team member with:
 - **Skills** — a set of tagged capabilities (e.g., "API Design", "Architecture", "Code Review")
 - **Avatar** — a procedurally generated SVG face, unique to each agent, with role badges (`</>` for developers, gold star for the CEO)
 - **Reporting line** — who they report to and who reports to them
+- **Profile page** — a detail view with an ID badge, general information, live task status, and access to communication and workspaces
 
 ### Developer Agents
 
@@ -24,7 +25,8 @@ Agents whose role involves writing code are flagged as developers. They receive:
 
 - A **personal workspace directory** where they write code when given implementation tasks
 - A `</>` badge on their avatar and in the UI
-- A **workspace browser** accessible from the Agents page, allowing you to browse files and view code they've written
+- A **workspace browser** accessible from the agent's profile page, allowing you to browse files and view code they've written
+- **Peer awareness** — developers know about other developers on the team and are encouraged to use the shared directory for coordination (e.g., a frontend and backend developer agreeing on API contracts)
 
 ### Organisational Hierarchy
 
