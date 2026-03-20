@@ -1,0 +1,98 @@
+@model AgentOrchestrator.Web.Models.WorkspaceViewModel
+@{
+    ViewData["Title"] = $"Workspace — {Model.AgentName}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">&lt;/&gt; Workspace</h2>
+        <small class="text-muted">@Model.AgentName</small>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Agents</a>
+</div>
+
+<div class="row" style="min-height: 500px;">
+    <!-- Left panel: Directory navigator -->
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-header py-2">
+                <strong class="small">
+                    /@Model.CurrentPath
+                </strong>
+            </div>
+            <div class="list-group list-group-flush workspace-nav">
+                @if (!string.IsNullOrEmpty(Model.CurrentPath))
+                {
+                    var parentPath = "";
+                    var lastSlash = Model.CurrentPath.LastIndexOf('/');
+                    if (lastSlash > 0)
+                    {
+                        parentPath = Model.CurrentPath[..lastSlash];
+                    }
+                    <a asp-action="Workspace" asp-route-id="@Model.AgentId" asp-route-path="@parentPath"
+                       class="list-group-item list-group-item-action py-1 px-3">
+                        <span class="text-muted">..</span>
+                    </a>
+                }
+                @if (Model.Entries.Count == 0)
+                {
+                    <div class="list-group-item py-2 px-3 text-muted small">
+                        Empty directory
+                    </div>
+                }
+                @foreach (var entry in Model.Entries)
+                {
+                    var isActive = Model.IsViewingFile && Model.FileName == entry.Name && !entry.IsDirectory;
+                    <a asp-action="Workspace" asp-route-id="@Model.AgentId" asp-route-path="@entry.RelativePath"
+                       class="list-group-item list-group-item-action py-1 px-3 d-flex justify-content-between align-items-center @(isActive ? "active" : "")">
+                        <span>
+                            @if (entry.IsDirectory)
+                            {
+                                <span class="me-1">&#128193;</span>
+                            }
+                            else
+                            {
+                                <span class="me-1">&#128196;</span>
+                            }
+                            @entry.Name
+                        </span>
+                        @if (!entry.IsDirectory)
+                        {
+                            <small class="text-muted">@FormatSize(entry.Size)</small>
+                        }
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right panel: File viewer -->
+    <div class="col-md-9">
+        <div class="card h-100">
+            @if (Model.IsViewingFile && Model.FileContent != null)
+            {
+                <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                    <strong class="small">@Model.FileName</strong>
+                </div>
+                <div class="card-body p-0">
+                    <pre class="workspace-file-content m-0 p-3"><code>@Model.FileContent</code></pre>
+                </div>
+            }
+            else
+            {
+                <div class="card-body d-flex align-items-center justify-content-center text-muted">
+                    <p>Select a file to view its contents.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+}

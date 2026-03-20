@@ -27,8 +27,22 @@ else
                                  alt="@agent.Name" width="80" height="80" class="rounded" />
                         </div>
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-0">@agent.Name</h5>
+                            <h5 class="card-title mb-0">
+                                @agent.Name
+                                @if (agent.IsCeo)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1" style="font-size:0.65rem;">CEO</span>
+                                }
+                                @if (agent.IsDeveloper)
+                                {
+                                    <span class="badge bg-success ms-1" style="font-size:0.65rem;">&lt;/&gt;</span>
+                                }
+                            </h5>
                             <small class="text-muted">@agent.JobTitle</small>
+                            @if (!string.IsNullOrEmpty(agent.ReportsToName))
+                            {
+                                <br /><small class="text-muted">Reports to: @agent.ReportsToName</small>
+                            }
                             <p class="card-text small mt-1 mb-0" style="white-space: pre-wrap;">@(agent.Persona.Length > 100 ? agent.Persona[..100] + "..." : agent.Persona)</p>
                             @if (agent.Skills.Any())
                             {
@@ -43,7 +57,13 @@ else
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
                         <small class="text-muted"><code>@agent.Id</code></small>
-                        <a asp-action="Requests" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">Requests</a>
+                        <div>
+                            @if (agent.IsDeveloper)
+                            {
+                                <a asp-action="Workspace" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-success me-1" title="View Workspace">&lt;/&gt; Workspace</a>
+                            }
+                            <a asp-action="Requests" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">Requests</a>
+                        </div>
                     </div>
                 </div>
             </div>

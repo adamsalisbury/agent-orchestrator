@@ -177,7 +177,7 @@ public class MailboxController : Controller
             AgentId = agentId,
             AgentName = agent?.Name ?? agentId,
             ThreadId = threadId,
-            Messages = messages.OrderBy(m => m.MessageNumber).Select(ToViewModel).ToList()
+            Messages = messages.OrderBy(m => m.MessageNumber).Select(ToMessageViewModel).ToList()
         });
     }
 
@@ -296,6 +296,103 @@ public class MailboxController : Controller
         });
     }
 
+    // --- Workspace Browser ---
+
+    public async Task<IActionResult> Workspace(string id, string? path)
+    {
+        var agent = await _agentRepo.GetAsync(id);
+        if (agent == null || !agent.IsDeveloper)
+            return NotFound();
+
+        var workspaceRoot = _agentRepo.GetAgentWorkspacePath(id);
+        if (!Directory.Exists(workspaceRoot))
+            Directory.CreateDirectory(workspaceRoot);
+
+        // Sanitise path to prevent directory traversal
+        var relativePath = SanitisePath(path ?? "");
+        var fullPath = Path.GetFullPath(Path.Combine(workspaceRoot, relativePath));
+
+        // Ensure we don't escape the workspace root
+        if (!fullPath.StartsWith(Path.GetFullPath(workspaceRoot)))
+            fullPath = workspaceRoot;
+
+        var model = new WorkspaceViewModel
+        {
+            AgentId = id,
+            AgentName = agent.DisplayName,
+            CurrentPath = relativePath
+        };
+
+        if (System.IO.File.Exists(fullPath))
+        {
+            // Viewing a file
+            model.IsViewingFile = true;
+            model.FileName = Path.GetFileName(fullPath);
+
+            try
+            {
+                model.FileContent = await System.IO.File.ReadAllTextAsync(fullPath);
+            }
+            catch
+            {
+                model.FileContent = "[Binary file — cannot display]";
+            }
+
+            // Still populate directory listing for the parent
+            var parentDir = Path.GetDirectoryName(fullPath) ?? workspaceRoot;
+            model.CurrentPath = Path.GetRelativePath(workspaceRoot, parentDir);
+            if (model.CurrentPath == ".") model.CurrentPath = "";
+            model.Entries = GetDirectoryEntries(parentDir, workspaceRoot);
+        }
+        else if (Directory.Exists(fullPath))
+        {
+            // Viewing a directory
+            model.Entries = GetDirectoryEntries(fullPath, workspaceRoot);
+        }
+
+        return View(model);
+    }
+
+    private static List<WorkspaceEntry> GetDirectoryEntries(string directory, string workspaceRoot)
+    {
+        var entries = new List<WorkspaceEntry>();
+
+        try
+        {
+            foreach (var dir in Directory.GetDirectories(directory).OrderBy(d => d))
+            {
+                var name = Path.GetFileName(dir);
+                entries.Add(new WorkspaceEntry
+                {
+                    Name = name,
+                    IsDirectory = true,
+                    RelativePath = Path.GetRelativePath(workspaceRoot, dir)
+                });
+            }
+
+            foreach (var file in Directory.GetFiles(directory).OrderBy(f => f))
+            {
+                var info = new FileInfo(file);
+                entries.Add(new WorkspaceEntry
+                {
+                    Name = info.Name,
+                    IsDirectory = false,
+                    RelativePath = Path.GetRelativePath(workspaceRoot, file),
+                    Size = info.Length
+                });
+            }
+        }
+        catch { }
+
+        return entries;
+    }
+
+    private static string SanitisePath(string path)
+    {
+        // Remove any directory traversal attempts
+        return path.Replace("..", "").Replace("~", "").TrimStart('/').TrimStart('\\');
+    }
+
     private static MessageRowViewModel BuildMessageRow(ThreadMessage m, Agent threadAgent, Dictionary<string, Agent> agentLookup, string? consultingAgentId = null)
     {
         string fromName, toName;
@@ -303,7 +400,7 @@ public class MailboxController : Controller
 
         if (m.Direction == MessageDirection.Outbound && m.FromAgentId != null)
         {
-            // Agent → Agent consultation (e.g. Brian asking Sarah)
+            // Agent -> Agent consultation (e.g. Brian asking Sarah)
             var askingAgent = agentLookup.GetValueOrDefault(m.FromAgentId);
             fromName = askingAgent?.DisplayName ?? m.FromAgentName ?? "Unknown";
             fromAvatarId = m.FromAgentId;
@@ -312,7 +409,7 @@ public class MailboxController : Controller
         }
         else if (m.Direction == MessageDirection.Outbound)
         {
-            // User → Agent
+            // User -> Agent
             fromName = "You";
             fromAvatarId = "adam";
             toName = threadAgent.DisplayName;
@@ -338,7 +435,7 @@ public class MailboxController : Controller
         }
         else
         {
-            // Agent → User
+            // Agent -> User
             fromName = threadAgent.DisplayName;
             fromAvatarId = threadAgent.Id;
             toName = "You";
@@ -380,7 +477,9 @@ public class MailboxController : Controller
             if (!Directory.Exists(agentDir))
                 return NotFound();
 
-            var svg = AvatarGenerator.Generate(id);
+            // Check agent flags for badge generation
+            var agent = await _agentRepo.GetAsync(id);
+            var svg = AvatarGenerator.Generate(id, agent?.IsDeveloper ?? false, agent?.IsCeo ?? false);
             await System.IO.File.WriteAllTextAsync(avatarPath, svg);
         }
 
@@ -396,10 +495,15 @@ public class MailboxController : Controller
         JobTitle = a.JobTitle,
         Persona = a.Persona,
         Skills = a.Skills,
-        CreatedAt = a.CreatedAt
+        CreatedAt = a.CreatedAt,
+        IsDeveloper = a.IsDeveloper,
+        IsCeo = a.IsCeo,
+        ReportsToId = a.ReportsToId,
+        ReportsToName = a.ReportsToName,
+        DirectReportIds = a.DirectReportIds
     };
 
-    private static ThreadMessageViewModel ToViewModel(ThreadMessage m) => new()
+    private static ThreadMessageViewModel ToMessageViewModel(ThreadMessage m) => new()
     {
         ThreadId = m.ThreadId,
         MessageNumber = m.MessageNumber,

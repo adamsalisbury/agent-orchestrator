@@ -17,7 +17,8 @@ public class FileAgentRepository : IAgentRepository
         Directory.CreateDirectory(_baseDirectory);
     }
 
-    public async Task<Agent> CreateAsync(string name, string jobTitle, string persona, List<string>? skills = null)
+    public async Task<Agent> CreateAsync(string name, string jobTitle, string persona, List<string>? skills = null,
+        bool isDeveloper = false, bool isCeo = false, string? reportsToId = null, string? reportsToName = null)
     {
         await _lock.WaitAsync();
         try
@@ -33,15 +34,25 @@ public class FileAgentRepository : IAgentRepository
                 JobTitle = jobTitle,
                 Persona = persona,
                 Skills = skills ?? new(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsDeveloper = isDeveloper,
+                IsCeo = isCeo,
+                ReportsToId = reportsToId,
+                ReportsToName = reportsToName
             };
 
             var skillsCsv = string.Join(",", agent.Skills);
-            var content = $"---\nagentId: {agent.Id}\nname: {agent.Name}\njobTitle: {agent.JobTitle}\nskills: {skillsCsv}\ncreatedAt: {agent.CreatedAt:O}\n---\n\n{agent.Persona}";
+            var content = $"---\nagentId: {agent.Id}\nname: {agent.Name}\njobTitle: {agent.JobTitle}\nskills: {skillsCsv}\ncreatedAt: {agent.CreatedAt:O}\nisDeveloper: {agent.IsDeveloper}\nisCeo: {agent.IsCeo}\nreportsToId: {agent.ReportsToId ?? ""}\nreportsToName: {agent.ReportsToName ?? ""}\n---\n\n{agent.Persona}";
             await File.WriteAllTextAsync(Path.Combine(agentDir, "persona.md"), content);
 
-            var avatarSvg = AvatarGenerator.Generate(id);
+            var avatarSvg = AvatarGenerator.Generate(id, isDeveloper, isCeo);
             await File.WriteAllTextAsync(Path.Combine(agentDir, "avatar.svg"), avatarSvg);
+
+            // Create workspace directory for developers
+            if (isDeveloper)
+            {
+                Directory.CreateDirectory(Path.Combine(agentDir, "workspace"));
+            }
 
             return agent;
         }
@@ -90,6 +101,16 @@ public class FileAgentRepository : IAgentRepository
                     agents.Add(agent);
             }
 
+            // Populate DirectReportIds from ReportsToId relationships
+            var agentLookup = agents.ToDictionary(a => a.Id);
+            foreach (var agent in agents)
+            {
+                agent.DirectReportIds = agents
+                    .Where(a => a.ReportsToId == agent.Id)
+                    .Select(a => a.Id)
+                    .ToList();
+            }
+
             return agents;
         }
         finally
@@ -118,6 +139,11 @@ public class FileAgentRepository : IAgentRepository
         {
             _lock.Release();
         }
+    }
+
+    public string GetAgentWorkspacePath(string agentId)
+    {
+        return Path.Combine(_baseDirectory, $"agent-{agentId}", "workspace");
     }
 
     private static Agent? ParseAgent(string fileContent)
@@ -154,7 +180,11 @@ public class FileAgentRepository : IAgentRepository
                 .Select(s => s.Trim())
                 .ToList(),
             CreatedAt = DateTime.TryParse(meta.GetValueOrDefault("createdAt", ""), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt) ? dt : DateTime.UtcNow,
-            Persona = body
+            Persona = body,
+            IsDeveloper = bool.TryParse(meta.GetValueOrDefault("isDeveloper", "false"), out var isDev) && isDev,
+            IsCeo = bool.TryParse(meta.GetValueOrDefault("isCeo", "false"), out var isCeo) && isCeo,
+            ReportsToId = string.IsNullOrWhiteSpace(meta.GetValueOrDefault("reportsToId", "")) ? null : meta["reportsToId"],
+            ReportsToName = string.IsNullOrWhiteSpace(meta.GetValueOrDefault("reportsToName", "")) ? null : meta["reportsToName"]
         };
     }
 }

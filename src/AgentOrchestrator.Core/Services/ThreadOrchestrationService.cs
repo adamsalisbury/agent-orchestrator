@@ -102,19 +102,40 @@ public class ThreadOrchestrationService
                 var agent = await _agentRepository.GetAsync(item.AgentId);
                 var teamAgents = await _agentRepository.GetAllAsync();
                 var project = await _projectRepository.GetAsync();
-                var workspaceDir = _projectRepository.GetWorkspacePath();
 
-                bool allowDelegation = !item.IsConsultation && item.DelegationDepth < MaxDelegationDepth;
-                var prompt = BuildPromptWithContext(agent, teamAgents, prior, allowDelegation, item.ConsultationContext, project);
-                var response = await _runner.ExecuteAsync(prompt, workspaceDir);
+                // Determine working directory: developers use their own workspace
+                string workingDir;
+                if (agent?.IsDeveloper == true)
+                {
+                    workingDir = _agentRepository.GetAgentWorkspacePath(item.AgentId);
+                    Directory.CreateDirectory(workingDir);
+                }
+                else
+                {
+                    workingDir = _projectRepository.GetWorkspacePath();
+                }
+
+                // Get connected agents (manager + direct reports) for delegation
+                var connectedAgents = GetConnectedAgents(agent, teamAgents);
+
+                bool allowDelegation = !item.IsConsultation && item.DelegationDepth < MaxDelegationDepth && connectedAgents.Count > 0;
+                var prompt = BuildPromptWithContext(agent, teamAgents, connectedAgents, prior, allowDelegation, item.ConsultationContext, project);
+                var response = await _runner.ExecuteAsync(prompt, workingDir);
 
                 var delegation = allowDelegation ? TryParseDelegation(response) : null;
 
                 if (delegation != null)
                 {
-                    var handled = await HandleDelegation(delegation, agent, teamAgents, item);
-                    if (handled)
-                        continue;
+                    // Validate delegation target is a connected agent
+                    var targetAgent = connectedAgents.FirstOrDefault(a =>
+                        a.Name.Equals(delegation.ToAgent, StringComparison.OrdinalIgnoreCase));
+
+                    if (targetAgent != null)
+                    {
+                        var handled = await HandleDelegation(delegation, agent, targetAgent, item);
+                        if (handled)
+                            continue;
+                    }
                 }
 
                 message.Content = response;
@@ -138,18 +159,33 @@ public class ThreadOrchestrationService
         }
     }
 
+    private static List<Agent> GetConnectedAgents(Agent? agent, List<Agent> allAgents)
+    {
+        if (agent == null) return new List<Agent>();
+
+        var connected = new List<Agent>();
+
+        // Manager (the agent this one reports to)
+        if (!string.IsNullOrEmpty(agent.ReportsToId))
+        {
+            var manager = allAgents.FirstOrDefault(a => a.Id == agent.ReportsToId);
+            if (manager != null)
+                connected.Add(manager);
+        }
+
+        // Direct reports (agents that report to this one)
+        var reports = allAgents.Where(a => a.ReportsToId == agent.Id).ToList();
+        connected.AddRange(reports);
+
+        return connected;
+    }
+
     private async Task<bool> HandleDelegation(
         DelegationDirective delegation,
         Agent? sourceAgent,
-        List<Agent> teamAgents,
+        Agent targetAgent,
         QueueItem item)
     {
-        var targetAgent = teamAgents.FirstOrDefault(a =>
-            a.Name.Equals(delegation.ToAgent, StringComparison.OrdinalIgnoreCase));
-
-        if (targetAgent == null)
-            return false;
-
         var newContext = item.ConsultationContext ?? "";
         newContext += $"\n[You asked {targetAgent.Name} ({targetAgent.JobTitle})]: {delegation.Question}\n";
 
@@ -248,6 +284,7 @@ public class ThreadOrchestrationService
     private static string BuildPromptWithContext(
         Agent? agent,
         List<Agent> allAgents,
+        List<Agent> connectedAgents,
         List<ThreadMessage> priorMessages,
         bool allowDelegation,
         string? consultationContext,
@@ -268,20 +305,58 @@ public class ThreadOrchestrationService
             sb.AppendLine($"You are working on the project: {project.Name}");
             sb.AppendLine($"Project description: {project.Description}");
             sb.AppendLine();
+        }
 
-            var teammates = allAgents.Where(a => a.Id != agent?.Id).ToList();
-            if (teammates.Count > 0)
+        // Org chart context
+        if (agent != null)
+        {
+            sb.AppendLine("=== ORGANISATIONAL STRUCTURE ===");
+
+            if (agent.IsCeo)
             {
-                sb.AppendLine("Your project team members:");
-                foreach (var t in teammates)
-                    sb.AppendLine($"- {t.Name} ({t.JobTitle})");
-                sb.AppendLine();
+                sb.AppendLine("You are the CEO of this organisation. You oversee all operations and set strategic direction.");
             }
 
+            // Manager info
+            if (!string.IsNullOrEmpty(agent.ReportsToId))
+            {
+                var manager = allAgents.FirstOrDefault(a => a.Id == agent.ReportsToId);
+                if (manager != null)
+                {
+                    sb.AppendLine($"You report to: {manager.Name} ({manager.JobTitle})");
+                }
+            }
+
+            // Direct reports
+            var directReports = allAgents.Where(a => a.ReportsToId == agent.Id).ToList();
+            if (directReports.Count > 0)
+            {
+                sb.AppendLine("Your direct reports:");
+                foreach (var report in directReports)
+                {
+                    var devLabel = report.IsDeveloper ? " [Developer]" : "";
+                    sb.AppendLine($"  - {report.Name} ({report.JobTitle}){devLabel}");
+                }
+            }
+
+            if (agent.IsDeveloper)
+            {
+                sb.AppendLine();
+                sb.AppendLine("You are a DEVELOPER. Your current working directory is your personal workspace.");
+                sb.AppendLine("When asked to develop, build, or implement something, you MUST write the code in your workspace directory.");
+                sb.AppendLine("Create proper project structures, write clean code, and ensure everything builds correctly.");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("COMMUNICATION RULES: You may ONLY communicate with your direct manager and your direct reports. You cannot contact agents outside your reporting line.");
+            sb.AppendLine("=== END ORGANISATIONAL STRUCTURE ===");
+            sb.AppendLine();
+        }
+
+        if (project != null)
+        {
             sb.AppendLine("SHARED DIRECTORY: There is a shared directory for this project where team members can exchange files (specs, notes, documentation).");
             sb.AppendLine("Path: ../shared/ (relative to your working directory)");
-            sb.AppendLine();
-            sb.AppendLine("CODE WORKSPACE: Your current working directory is the project's code workspace. All code for this project should be written and managed here.");
             sb.AppendLine("=== END PROJECT CONTEXT ===");
             sb.AppendLine();
         }
@@ -314,22 +389,20 @@ public class ThreadOrchestrationService
             sb.AppendLine("Now provide your final response to the user, incorporating what you learned from the consultation.");
         }
 
-        if (allowDelegation && allAgents.Count > 1 && agent != null)
+        if (allowDelegation && connectedAgents.Count > 0 && agent != null)
         {
-            var others = allAgents.Where(a => a.Id != agent.Id).ToList();
-            if (others.Count > 0)
+            sb.AppendLine();
+            sb.AppendLine("Team members you can delegate to (your direct reports and manager):");
+            foreach (var other in connectedAgents)
             {
-                sb.AppendLine();
-                sb.AppendLine("Available team members you can consult:");
-                foreach (var other in others)
-                {
-                    sb.AppendLine($"- {other.Name} ({other.JobTitle})");
-                }
-                sb.AppendLine();
-                sb.AppendLine("If a question is outside your expertise and another team member is better suited, you may delegate by responding with ONLY this JSON (no other text):");
-                sb.AppendLine("""{"action": "delegate", "toAgent": "<name>", "question": "<the question to ask the other agent, with full context>"}""");
-                sb.AppendLine("Only delegate when the question is clearly outside your expertise. If you already have consultation results above, use them to answer directly.");
+                var devLabel = other.IsDeveloper ? " [Developer - can write code]" : "";
+                sb.AppendLine($"- {other.Name} ({other.JobTitle}){devLabel}");
             }
+            sb.AppendLine();
+            sb.AppendLine("If a task should be handled by one of these team members, delegate by responding with ONLY this JSON (no other text):");
+            sb.AppendLine("""{"action": "delegate", "toAgent": "<name>", "question": "<the task or question with full context and specifications>"}""");
+            sb.AppendLine("Only delegate when the task is clearly within another team member's responsibilities. If you already have consultation results above, use them to answer directly.");
+            sb.AppendLine("When delegating development work to a developer, include complete specifications so they can implement it in their workspace.");
         }
 
         return sb.ToString();

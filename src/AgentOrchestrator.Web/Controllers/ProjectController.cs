@@ -42,15 +42,7 @@ public class ProjectController : Controller
             Name = project?.Name ?? "",
             Description = project?.Description ?? "",
             IsConfigured = project != null,
-            Agents = agents.OrderBy(a => a.Name).Select(a => new AgentViewModel
-            {
-                Id = a.Id,
-                Name = a.Name,
-                JobTitle = a.JobTitle,
-                Persona = a.Persona,
-                Skills = a.Skills,
-                CreatedAt = a.CreatedAt
-            }).ToList(),
+            Agents = agents.OrderBy(a => a.Name).Select(a => ToViewModel(a)).ToList(),
             SharedFiles = sharedFiles
         });
     }
@@ -127,15 +119,7 @@ public class ProjectController : Controller
         {
             ProjectName = project.Name,
             ProjectDescription = project.Description,
-            Agents = agents.OrderBy(a => a.Name).Select(a => new AgentViewModel
-            {
-                Id = a.Id,
-                Name = a.Name,
-                JobTitle = a.JobTitle,
-                Persona = a.Persona,
-                Skills = a.Skills,
-                CreatedAt = a.CreatedAt
-            }).ToList()
+            Agents = agents.OrderBy(a => a.Name).Select(a => ToViewModel(a)).ToList()
         });
     }
 
@@ -156,10 +140,13 @@ The org chart should be realistic and tailored to the project — for example, a
 
 Each person needs a realistic first name, a job title, and a brief purpose statement describing their responsibilities.
 
+IMPORTANT: For any role that involves writing code, programming, software development, or engineering implementation, set isDeveloper to true. This includes roles like ""Software Engineer"", ""Frontend Developer"", ""Backend Developer"", ""Full Stack Developer"", ""DevOps Engineer"", etc. Management and design roles should be false.
+
 Output ONLY valid JSON — no markdown fences, no explanation. Use this exact format:
 [
-  {{""name"": ""Alex"", ""jobTitle"": ""Chief Executive Officer"", ""purpose"": ""Oversees all operations, sets strategic direction, and ensures alignment across the team"", ""reportsTo"": null}},
-  {{""name"": ""Sarah"", ""jobTitle"": ""VP of Engineering"", ""purpose"": ""Leads the technical team and architecture decisions"", ""reportsTo"": ""Alex""}}
+  {{""name"": ""Alex"", ""jobTitle"": ""Chief Executive Officer"", ""purpose"": ""Oversees all operations, sets strategic direction, and ensures alignment across the team"", ""reportsTo"": null, ""isDeveloper"": false}},
+  {{""name"": ""Sarah"", ""jobTitle"": ""VP of Engineering"", ""purpose"": ""Leads the technical team and architecture decisions"", ""reportsTo"": ""Alex"", ""isDeveloper"": false}},
+  {{""name"": ""James"", ""jobTitle"": ""Senior Backend Developer"", ""purpose"": ""Implements server-side logic and API design"", ""reportsTo"": ""Sarah"", ""isDeveloper"": true}}
 ]
 
 The reportsTo field should contain the name of the person they report to, or null for the CEO.";
@@ -199,9 +186,29 @@ The reportsTo field should contain the name of the person they report to, or nul
 
         try
         {
+            // Resolve reportsTo name to agent ID
+            string? reportsToId = null;
+            string? reportsToName = request.ReportsTo;
+            if (!string.IsNullOrWhiteSpace(request.ReportsTo))
+            {
+                var allAgents = await _agentRepo.GetAllAsync();
+                var manager = allAgents.FirstOrDefault(a =>
+                    a.Name.Equals(request.ReportsTo, StringComparison.OrdinalIgnoreCase));
+                reportsToId = manager?.Id;
+            }
+
+            // Detect CEO from job title
+            var isCeo = request.IsCeo ||
+                request.JobTitle.Contains("CEO", StringComparison.OrdinalIgnoreCase) ||
+                request.JobTitle.Contains("Chief Executive", StringComparison.OrdinalIgnoreCase);
+
+            // Detect developer from job title or explicit flag
+            var isDeveloper = request.IsDeveloper || IsDeveloperRole(request.JobTitle);
+
             // Generate persona
+            var devContext = isDeveloper ? " They are a hands-on developer who writes code." : "";
             var personaPrompt = $"Generate an agent persona/system prompt for an AI agent whose job title is: \"{request.JobTitle}\". " +
-                                $"Their purpose is: \"{request.Purpose}\". " +
+                                $"Their purpose is: \"{request.Purpose}\".{devContext} " +
                                 "Cover their expertise, work approach, and responsibilities. " +
                                 "The agent will be part of a software development team collaborating with other specialist agents. " +
                                 "Keep it under 100 words. Output ONLY the persona text, no preamble or explanation.";
@@ -222,7 +229,9 @@ The reportsTo field should contain the name of the person they report to, or nul
                 .ToList();
 
             // Create the agent
-            var agent = await _agentRepo.CreateAsync(request.Name, request.JobTitle, persona, skills);
+            var agent = await _agentRepo.CreateAsync(
+                request.Name, request.JobTitle, persona, skills,
+                isDeveloper, isCeo, reportsToId, reportsToName);
 
             return Json(new
             {
@@ -233,7 +242,10 @@ The reportsTo field should contain the name of the person they report to, or nul
                     agent.Name,
                     agent.JobTitle,
                     agent.Persona,
-                    agent.Skills
+                    agent.Skills,
+                    agent.IsDeveloper,
+                    agent.IsCeo,
+                    agent.ReportsToName
                 }
             });
         }
@@ -242,4 +254,27 @@ The reportsTo field should contain the name of the person they report to, or nul
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    private static bool IsDeveloperRole(string jobTitle)
+    {
+        var keywords = new[] { "developer", "engineer", "programmer", "coder", "dev ",
+            "frontend", "backend", "full stack", "fullstack", "full-stack", "devops", "sre" };
+        var lower = jobTitle.ToLowerInvariant();
+        return keywords.Any(k => lower.Contains(k));
+    }
+
+    private static AgentViewModel ToViewModel(Agent a) => new()
+    {
+        Id = a.Id,
+        Name = a.Name,
+        JobTitle = a.JobTitle,
+        Persona = a.Persona,
+        Skills = a.Skills,
+        CreatedAt = a.CreatedAt,
+        IsDeveloper = a.IsDeveloper,
+        IsCeo = a.IsCeo,
+        ReportsToId = a.ReportsToId,
+        ReportsToName = a.ReportsToName,
+        DirectReportIds = a.DirectReportIds
+    };
 }

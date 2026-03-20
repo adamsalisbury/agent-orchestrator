@@ -166,9 +166,13 @@
                 return '<span class="badge bg-info text-dark me-1">' + escapeHtml(s) + '</span>';
             }).join("");
 
+            var roleBadges = '';
+            if (agent.isCeo) roleBadges += ' <span class="badge bg-warning text-dark" style="font-size:0.65rem;">CEO</span>';
+            if (agent.isDeveloper) roleBadges += ' <span class="badge bg-success" style="font-size:0.65rem;">&lt;/&gt;</span>';
             row.innerHTML = '<img src="' + avatarUrl + '" alt="avatar" width="40" height="40" class="rounded-circle me-3" />' +
                 '<div class="flex-grow-1">' +
-                    '<strong>' + escapeHtml(agent.name) + '</strong> <span class="text-muted">\u2014 ' + escapeHtml(agent.jobTitle) + '</span>' +
+                    '<strong>' + escapeHtml(agent.name) + '</strong>' + roleBadges + ' <span class="text-muted">\u2014 ' + escapeHtml(agent.jobTitle) + '</span>' +
+                    (agent.reportsToName ? '<br/><small class="text-muted">Reports to: ' + escapeHtml(agent.reportsToName) + '</small>' : '') +
                     '<div class="mt-1">' + skillsHtml + '</div>' +
                 '</div>';
 
@@ -216,10 +220,13 @@
                     var item = document.createElement("div");
                     item.className = "d-flex align-items-center mb-2 ms-3";
                     item.id = "agent-progress-" + i;
+                    var badges = '';
+                    if (!role.reportsTo) badges += ' <span class="badge bg-warning text-dark" style="font-size:0.65rem;">CEO</span>';
+                    if (role.isDeveloper) badges += ' <span class="badge bg-success" style="font-size:0.65rem;">&lt;/&gt;</span>';
                     item.innerHTML = '<span class="spinner-border spinner-border-sm me-2 agent-spin" style="display:none;"></span>' +
                         '<span class="me-2 text-success agent-icon" style="display:none;">&#10003;</span>' +
                         '<span class="me-2 text-muted agent-waiting">&#9679;</span>' +
-                        '<span>' + escapeHtml(role.name) + ' \u2014 ' + escapeHtml(role.jobTitle) + '</span>';
+                        '<span>' + escapeHtml(role.name) + ' \u2014 ' + escapeHtml(role.jobTitle) + badges + '</span>';
                     listEl.appendChild(item);
                 });
 
@@ -252,7 +259,15 @@
             spin.style.display = "";
 
             var headers = { "Content-Type": "application/json" };
-            var body = JSON.stringify({ name: role.name, jobTitle: role.jobTitle, purpose: role.purpose });
+            var isCeo = !role.reportsTo;
+            var body = JSON.stringify({
+                name: role.name,
+                jobTitle: role.jobTitle,
+                purpose: role.purpose,
+                reportsTo: role.reportsTo || null,
+                isDeveloper: role.isDeveloper || false,
+                isCeo: isCeo
+            });
 
             return fetch("@Url.Action("CreateAgentFromRole", "Project")", { method: "POST", headers: headers, body: body })
             .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })

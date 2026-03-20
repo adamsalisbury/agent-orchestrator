@@ -8,6 +8,11 @@ public class AgentViewModel
     public string Persona { get; set; } = string.Empty;
     public List<string> Skills { get; set; } = new();
     public DateTime CreatedAt { get; set; }
+    public bool IsDeveloper { get; set; }
+    public bool IsCeo { get; set; }
+    public string? ReportsToId { get; set; }
+    public string? ReportsToName { get; set; }
+    public List<string> DirectReportIds { get; set; } = new();
     public string DisplayName => $"{Name} ({JobTitle})";
 }
 
@@ -24,4 +29,23 @@ public class GenerateAgentRequest
 {
     public string JobTitle { get; set; } = string.Empty;
     public string Purpose { get; set; } = string.Empty;
+}
+
+public class WorkspaceViewModel
+{
+    public string AgentId { get; set; } = string.Empty;
+    public string AgentName { get; set; } = string.Empty;
+    public string CurrentPath { get; set; } = string.Empty;
+    public List<WorkspaceEntry> Entries { get; set; } = new();
+    public string? FileContent { get; set; }
+    public string? FileName { get; set; }
+    public bool IsViewingFile { get; set; }
+}
+
+public class WorkspaceEntry
+{
+    public string Name { get; set; } = string.Empty;
+    public bool IsDirectory { get; set; }
+    public string RelativePath { get; set; } = string.Empty;
+    public long Size { get; set; }
 }

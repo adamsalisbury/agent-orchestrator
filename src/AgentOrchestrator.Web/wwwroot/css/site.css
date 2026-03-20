@@ -258,6 +258,47 @@ body.dark-mode .agent-roster-row {
   border-color: #3a3f47 !important;
 }
 
+/* ---- Workspace browser ---- */
+.workspace-nav .list-group-item {
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.workspace-file-content {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 70vh;
+  background: #fafbfc;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.workspace-file-content code {
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+body.dark-mode .workspace-file-content {
+  background: #1a1d21;
+  color: #e0e0e0;
+}
+
+body.dark-mode .workspace-nav .list-group-item {
+  background-color: #2b2f35;
+  border-color: #3a3f47;
+  color: #e0e0e0;
+}
+
+body.dark-mode .workspace-nav .list-group-item:hover,
+body.dark-mode .workspace-nav .list-group-item:focus {
+  background-color: #323740;
+}
+
+body.dark-mode .workspace-nav .list-group-item.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
 /* Mobile responsive tables */
 @media (max-width: 767.98px) {
   .table-responsive-mobile thead { display: none; }

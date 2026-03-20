@@ -8,5 +8,10 @@ public class Agent
     public string Persona { get; set; } = string.Empty;
     public List<string> Skills { get; set; } = new();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsDeveloper { get; set; }
+    public bool IsCeo { get; set; }
+    public string? ReportsToId { get; set; }
+    public string? ReportsToName { get; set; }
+    public List<string> DirectReportIds { get; set; } = new();
     public string DisplayName => $"{Name} ({JobTitle})";
 }

@@ -16,7 +16,7 @@ public static class AvatarGenerator
     private static readonly string[] BgColors =
         { "#E8F4FD", "#FDE8E8", "#E8FDE8", "#FDF8E8", "#F0E8FD", "#E8F0FD", "#FDE8F4", "#E8FDFA", "#F5F0E8", "#EEE8FD" };
 
-    public static string Generate(string seed)
+    public static string Generate(string seed, bool isDeveloper = false, bool isCeo = false)
     {
         var sb = new StringBuilder();
 
@@ -187,6 +187,20 @@ public static class AvatarGenerator
                     sb.AppendLine($"""  <circle cx="{cx}" cy="48" r="8" fill="{hair}"/>""");
                 }
                 break;
+        }
+
+        // --- Role badges ---
+        if (isDeveloper)
+        {
+            // </> code badge in top-right corner
+            sb.AppendLine("""  <rect x="155" y="8" width="38" height="24" rx="6" fill="#1a1a2e" opacity="0.85"/>""");
+            sb.AppendLine("""  <text x="174" y="25" text-anchor="middle" fill="#4ADE80" font-family="monospace" font-size="13" font-weight="bold">&lt;/&gt;</text>""");
+        }
+
+        if (isCeo)
+        {
+            // Gold star badge in top-right corner
+            sb.AppendLine("""  <polygon points="174,8 178,18 189,19 181,26 183,37 174,32 165,37 167,26 159,19 170,18" fill="#FFD700" stroke="#B8860B" stroke-width="1"/>""");
         }
 
         sb.AppendLine("</svg>");

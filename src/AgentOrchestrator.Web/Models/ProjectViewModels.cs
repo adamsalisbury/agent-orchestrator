@@ -33,6 +33,9 @@ public class CreateAgentFromRoleRequest
     public string Name { get; set; } = string.Empty;
     public string JobTitle { get; set; } = string.Empty;
     public string Purpose { get; set; } = string.Empty;
+    public string? ReportsTo { get; set; }
+    public bool IsDeveloper { get; set; }
+    public bool IsCeo { get; set; }
 }
 
 public class TeamRoleDto
@@ -41,4 +44,5 @@ public class TeamRoleDto
     public string JobTitle { get; set; } = string.Empty;
     public string Purpose { get; set; } = string.Empty;
     public string? ReportsTo { get; set; }
+    public bool IsDeveloper { get; set; }
 }
