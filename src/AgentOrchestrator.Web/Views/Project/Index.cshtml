@@ -8,16 +8,35 @@
         <h2 class="mb-0">@Model.Name</h2>
         <small class="text-muted">@Model.CompanyName</small>
     </div>
-    <div>
-        <a asp-action="Workspace" class="btn btn-outline-success me-1">&lt;/&gt; Workspace</a>
-        <a asp-action="Edit" class="btn btn-outline-secondary">Edit</a>
-    </div>
+    <a asp-action="Edit" class="btn btn-outline-secondary">Edit</a>
 </div>
 
 <div class="card mb-3">
     <div class="card-header"><strong>Description</strong></div>
     <div class="card-body">
         <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.Description</pre>
+    </div>
+</div>
+
+<!-- File Browsers -->
+<div class="row mb-3">
+    <div class="col-md-6 mb-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5>&lt;/&gt; Workspace</h5>
+                <p class="text-muted small mb-2">Browse the code written by the development team.</p>
+                <a asp-action="Workspace" class="btn btn-outline-success">&lt;/&gt; Open Workspace</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-2">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5>Shared Space</h5>
+                <p class="text-muted small mb-2">Specifications, API contracts, and coordination files.</p>
+                <a asp-action="SharedSpace" class="btn btn-outline-info">Open Shared Space</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -48,26 +67,6 @@
                     </div>
                 }
             </div>
-        }
-    </div>
-</div>
-
-<!-- Shared Files -->
-<div class="card mb-3">
-    <div class="card-header"><strong>Shared Files</strong></div>
-    <div class="card-body">
-        @if (!Model.SharedFiles.Any())
-        {
-            <p class="text-muted mb-0">No shared files yet. Team members can add files to the shared directory during conversations.</p>
-        }
-        else
-        {
-            <ul class="list-unstyled mb-0">
-                @foreach (var file in Model.SharedFiles)
-                {
-                    <li class="mb-1"><code>@file</code></li>
-                }
-            </ul>
         }
     </div>
 </div>

@@ -276,6 +276,54 @@ public class ProjectController : Controller
         return View(model);
     }
 
+    // --- Shared Space Browser ---
+
+    public IActionResult SharedSpace(string? path)
+    {
+        var sharedRoot = _projectRepo.GetSharedPath();
+        if (!Directory.Exists(sharedRoot))
+            Directory.CreateDirectory(sharedRoot);
+
+        var relativePath = SanitisePath(path ?? "");
+        var fullPath = Path.GetFullPath(Path.Combine(sharedRoot, relativePath));
+
+        if (!fullPath.StartsWith(Path.GetFullPath(sharedRoot)))
+            fullPath = sharedRoot;
+
+        var model = new WorkspaceViewModel
+        {
+            AgentId = "",
+            AgentName = "Shared Space",
+            CurrentPath = relativePath
+        };
+
+        if (System.IO.File.Exists(fullPath))
+        {
+            model.IsViewingFile = true;
+            model.FileName = Path.GetFileName(fullPath);
+
+            try
+            {
+                model.FileContent = System.IO.File.ReadAllText(fullPath);
+            }
+            catch
+            {
+                model.FileContent = "[Binary file — cannot display]";
+            }
+
+            var parentDir = Path.GetDirectoryName(fullPath) ?? sharedRoot;
+            model.CurrentPath = Path.GetRelativePath(sharedRoot, parentDir);
+            if (model.CurrentPath == ".") model.CurrentPath = "";
+            model.Entries = GetDirectoryEntries(parentDir, sharedRoot);
+        }
+        else if (Directory.Exists(fullPath))
+        {
+            model.Entries = GetDirectoryEntries(fullPath, sharedRoot);
+        }
+
+        return View(model);
+    }
+
     private static List<WorkspaceEntry> GetDirectoryEntries(string directory, string workspaceRoot)
     {
         var entries = new List<WorkspaceEntry>();

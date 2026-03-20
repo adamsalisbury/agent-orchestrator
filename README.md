@@ -7,13 +7,15 @@ A multi-agent orchestration platform that enables creating, managing, and coordi
 - **Setup wizard** — 3-step wizard: company name, project details, team generation
 - **Auto-generated organisations** — describe your project and an entire org chart (CEO + 5-10 tailored roles) is created automatically, each with a generated persona and skill set
 - **Organisational hierarchy** — agents are connected via a reporting structure; delegation is restricted to direct reports and managers
-- **Developer workspaces** — agents flagged as developers get personal workspace directories where they write code, browsable via a built-in file viewer
+- **Shared workspace** — all developers and DevOps engineers work in a single project workspace, browsable via a built-in file viewer on the Project page
+- **Shared space** — a separate directory for specifications, API contracts, and coordination files, also browsable from the Project page
+- **DevOps hosting** — DevOps engineers can run and host the project from the shared workspace; the CEO reports the URL back to the client
 - **Agent-to-agent delegation** — agents delegate tasks through the org chart, up to 5 levels deep
 - **Threaded conversations** — send messages to agents and track multi-turn conversations
 - **Real-time updates** — SignalR pushes live status changes as agents process requests
 - **Agent profiles** — each agent has a detail page with an ID badge, persona, skills, reporting structure, and live task status
 - **Live task status** — agents report what they're currently working on and who they're blocked by, visible on cards and profile pages
-- **Developer peer collaboration** — developers are aware of each other and use the shared directory to coordinate (e.g., agreeing on API contracts)
+- **Developer peer collaboration** — developers and DevOps engineers are aware of each other and use the shared space to coordinate (e.g., agreeing on API contracts)
 - **Role badges** — developer agents display a `</>` badge, the CEO gets a gold star, both on avatars and in the UI
 - **Dark/light mode** — theme toggle with persistent preference
 

@@ -109,13 +109,12 @@ All data persists as files under `App_Data/`:
 App_Data/
 ├── project/
 │   ├── project.md          # Company name, project name and description
-│   ├── workspace/          # Shared project workspace
-│   └── shared/             # File exchange between agents
+│   ├── workspace/          # Shared project workspace (all developers and DevOps work here)
+│   └── shared/             # Shared space for specs, API contracts, and coordination files
 ├── agent-{id}/
 │   ├── persona.md          # Agent metadata (including role flags, reporting line)
 │   ├── avatar.svg          # Generated avatar with role badge
 │   ├── current-task.md     # Transient — present only while agent is busy/blocked
-│   ├── workspace/          # Developer agents only — personal code workspace
 │   └── threads/
 │       └── thread-{id}/
 │           └── {threadId}-{n}.md  # Individual messages (Markdown with YAML frontmatter)
@@ -130,7 +129,8 @@ Project metadata in `project.md` includes YAML frontmatter with: `companyName`, 
 - **Thin controllers** — all domain logic, prompt construction, and Claude Code interaction lives in Core services; controllers handle only HTTP concerns
 - **Centralised prompts** — all prompt templates live in `Prompts.cs` as constants, making them easy to find, modify, and test
 - **Org chart delegation** — agents can only delegate to their direct reports or manager, preventing arbitrary cross-team communication and enabling realistic task cascading
-- **Developer workspaces** — developer agents execute Claude Code in their own workspace directory, keeping code output isolated and browsable
+- **Shared workspace** — all developers and DevOps engineers work in a single project workspace, enabling collaboration and allowing DevOps to run the project directly
+- **Software company framing** — agents are told they are employees of a software company and that the user is the client; the CEO is responsible for gathering requirements and reporting deliverables
 - **Background queue processing** — messages are queued via `System.Threading.Channels` and processed asynchronously, keeping the web UI responsive
 - **Claude Code CLI integration** — agents execute via the CLI rather than a direct API, giving them access to tool use, file operations, and the full Claude Code capability set
 - **Delegation depth limit** — capped at 5 levels to prevent runaway recursion between agents

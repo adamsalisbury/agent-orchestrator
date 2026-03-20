@@ -4,7 +4,7 @@
 
 Agent Orchestrator is a web-based platform for creating and managing teams of AI agents that collaborate to complete tasks. It provides a centralised interface for defining agents with distinct personas and skills, organising them into a reporting hierarchy, sending them work requests, and watching them coordinate through delegation along the chain of command.
 
-Rather than interacting with a single AI assistant, Agent Orchestrator models a **team dynamic** — a CEO oversees the organisation, managers coordinate their reports, and developers write code in their own workspaces.
+Rather than interacting with a single AI assistant, Agent Orchestrator models a **software development company** — the user is the client, the CEO takes their brief, managers coordinate, developers write code in a shared workspace, and DevOps engineers host the finished product.
 
 ## Core Concepts
 
@@ -19,14 +19,15 @@ An agent is an AI team member with:
 - **Reporting line** — who they report to and who reports to them
 - **Profile page** — a detail view with an ID badge, general information, live task status, and access to communication and workspaces
 
-### Developer Agents
+### Developer & DevOps Agents
 
-Agents whose role involves writing code are flagged as developers. They receive:
+Agents whose role involves writing code or infrastructure are flagged as developers. They receive:
 
-- A **personal workspace directory** where they write code when given implementation tasks
+- Access to the **shared project workspace** where all developers write code together
 - A `</>` badge on their avatar and in the UI
-- A **workspace browser** accessible from the agent's profile page, allowing you to browse files and view code they've written
-- **Peer awareness** — developers know about other developers on the team and are encouraged to use the shared directory for coordination (e.g., a frontend and backend developer agreeing on API contracts)
+- **Peer awareness** — developers and DevOps engineers know about each other and coordinate via the shared space (e.g., agreeing on API contracts)
+
+**DevOps engineers** have additional responsibilities: once developers complete their work, DevOps reviews the workspace, runs the project (e.g., `dotnet run`, `npx http-server`), and reports the URL where the hosted application can be accessed.
 
 ### Organisational Hierarchy
 
@@ -43,7 +44,8 @@ The platform is organised around a company and its project:
 
 - **Company name** — the name of the organisation, displayed in the header throughout the application
 - **Project name and description** — what the team is building, shared as context with all agents
-- **Shared directory** — for exchanging files between agents (specs, notes, documentation)
+- **Workspace** — the shared code directory where all developers and DevOps engineers work, browsable from the Project page
+- **Shared space** — for exchanging specifications, API contracts, and coordination files between agents, also browsable from the Project page
 - **Team roster** — all agents can see who else is on the team and their roles
 
 ### Threads and Messages
@@ -73,7 +75,8 @@ Agents delegate tasks through the org chart:
 | Agent identity | Generic | Custom persona, skills, avatar |
 | Organisation | None | CEO-led hierarchy with reporting lines |
 | Collaboration | None | Agents delegate along chain of command |
-| Code output | Inline in chat | Written to developer workspaces, browsable via UI |
+| Code output | Inline in chat | Written to shared workspace, browsable via Project page |
+| Hosting | Manual | DevOps agents run and host the project, CEO reports URL |
 | Project awareness | Per-conversation | Persistent project context shared across all agents |
 | Conversation tracking | Linear | Threaded with full history |
 | Real-time updates | Request/response | SignalR live notifications |

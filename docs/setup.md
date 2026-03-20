@@ -86,8 +86,8 @@ Configuration is in `src/AgentOrchestrator.Web/appsettings.json`:
 
 All data is stored in `src/AgentOrchestrator.Web/App_Data/`. This directory is created automatically and contains:
 
-- Agent personas, avatars, workspaces, and conversation threads
-- Project configuration and shared files
+- Agent personas, avatars, and conversation threads
+- Project configuration, shared workspace, and shared space
 - Request tracking data
 
 The `App_Data/` directory is excluded from version control via `.gitignore`.

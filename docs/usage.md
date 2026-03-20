@@ -103,25 +103,30 @@ Delegation is **restricted to the reporting line** — an agent can only communi
 
 Delegation is limited to 5 levels deep to prevent infinite loops.
 
-## Developer Workspaces
+## Workspace & Shared Space
 
-Developer agents write code in personal workspace directories.
+### Shared Workspace
 
-### Developer Peer Collaboration
+All developers and DevOps engineers work in a single shared project workspace. Code written by any developer is visible to all others and to DevOps.
 
-Developers are aware of each other and are instructed to use the shared directory (`../shared/`) to coordinate. For example, a frontend developer and backend developer can agree on API contracts by writing shared specification files that both reference.
+The workspace is browsable from the **Project** page by clicking **Open Workspace**. Developer and DevOps agent profiles also link to it. The browser displays:
 
-### Browsing a Workspace
+- **Left panel (25%)** — monospaced directory and file navigator with `..` to go up (capped at the workspace root)
+- **Right panel (75%)** — monospaced plain text file viewer for the selected file
 
-1. Navigate to **Team**, click **View** on a developer agent
-2. Click the **`</>` Workspace** button
-3. The workspace browser shows:
-   - **Left panel (25%)** — directory and file navigator with `..` to go up (capped at the workspace root)
-   - **Right panel (75%)** — plain text file viewer for the selected file
+### Shared Space
 
-### Accessing Workspaces Externally
+The shared space is a separate directory for specifications, API contracts, integration notes, and other coordination files. Agents use this to align on interfaces — for example, a frontend and backend developer agreeing on an API contract.
 
-Developer workspaces are stored at `App_Data/agent-{id}/workspace/`. You can open these directories directly in VS Code or any editor — either locally or via SSH into the container running the application.
+Browsable from the **Project** page by clicking **Open Shared Space**, using the same file browser layout.
+
+### DevOps Hosting
+
+Once developers complete their work, they notify DevOps (via delegation through the org chart). DevOps engineers review the workspace, run the project using the appropriate tool (`dotnet run`, `npx http-server`, etc.), and report the URL. The CEO then passes this URL back to the client.
+
+### Accessing Files Externally
+
+The workspace is stored at `App_Data/project/workspace/` and the shared space at `App_Data/project/shared/`. You can open these directories directly in VS Code or any editor — either locally or via SSH into the container running the application.
 
 ## Org Chart & Role Badges
 

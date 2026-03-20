@@ -7,8 +7,8 @@ Agent Orchestrator is designed for anyone who wants to explore multi-agent AI wo
 ### Developers and Engineers
 
 - Set up a team of specialised AI agents to assist with different aspects of a project
-- Have a "backend engineer" agent handle API design while a "frontend developer" agent works on UI — each in their own workspace, coordinating via shared API contracts
-- Browse the code developers write directly in the workspace file viewer, or open the directories in VS Code
+- Have a "backend engineer" and "frontend developer" working in a shared workspace, coordinating via API contracts in the shared space
+- Browse the code via the workspace file viewer on the Project page, or open the directory directly in VS Code
 - Monitor what each agent is working on in real time via their profile pages
 
 ### Technical Leads and Architects
@@ -28,12 +28,12 @@ Agent Orchestrator is designed for anyone who wants to explore multi-agent AI wo
 
 - Create a virtual team of specialists to fill knowledge gaps
 - Get feedback from agents with different expertise areas without needing human teammates
-- Have developer agents write code in isolated workspaces you can review and integrate
+- Have developer agents write code in a shared workspace you can browse and review
 
 ## Use Cases
 
-- **Software development** — auto-generate a team (CEO, VP of Engineering, developers, designer, QA), give the CEO a product brief, and watch the org build it
-- **Code review** — set up a reviewer agent and have it review code in a developer's workspace
+- **Full-cycle software development** — auto-generate a team (CEO, VP of Engineering, developers, DevOps, designer), give the CEO a product brief, watch the org build it, and get a URL to the running product
+- **Code review** — browse the shared workspace to review code written by developer agents
 - **Research and analysis** — create agents with different domain expertise to analyse a problem from multiple angles
-- **Prototyping** — rapidly iterate on ideas with developer agents writing code in browsable workspaces
+- **Prototyping** — rapidly iterate on ideas with developer agents writing code in a browsable shared workspace
 - **Learning** — interact with specialised agents to learn about unfamiliar topics, with realistic team dynamics

@@ -325,10 +325,15 @@ body.dark-mode .agent-roster-row {
   border-color: #3a3f47 !important;
 }
 
-/* ---- Workspace browser ---- */
+/* ---- Workspace & shared space browser ---- */
 .workspace-nav .list-group-item {
   font-size: 0.85rem;
-  font-family: monospace;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+.workspace-path-display {
+  font-size: 0.8rem;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
 .workspace-file-content {
@@ -339,10 +344,11 @@ body.dark-mode .agent-roster-row {
   background: #fafbfc;
   white-space: pre;
   tab-size: 4;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
 .workspace-file-content code {
-  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-family: inherit;
 }
 
 body.dark-mode .workspace-file-content {
