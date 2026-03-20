@@ -33,80 +33,34 @@
             </div>
         </div>
 
-        <!-- Auto-Generate Section -->
+        <!-- Generate Section -->
         <div class="card mb-4" id="auto-generate-card">
             <div class="card-body">
-                <h5 class="mb-2">Auto-Generate Team</h5>
+                <h5 class="mb-2">Generate Organisation</h5>
                 <p class="text-muted">
-                    Analyse the project and build an organisation of 5-10 agents with a CEO and tailored roles.
-                    Each agent gets a generated persona and skill set.
+                    Based on your project description, an organisation of 5-10 team members will be designed with a CEO and tailored roles.
+                    Each team member gets a generated persona and skill set.
                 </p>
-                <button type="button" id="btn-auto-generate" class="btn btn-primary">
+                <button type="button" id="btn-auto-generate" class="btn btn-primary btn-lg">
                     Generate Organisation
                 </button>
             </div>
         </div>
 
-        <!-- Auto-Generate Progress -->
+        <!-- Generation Progress -->
         <div class="card mb-4" id="auto-progress-card" style="display:none;">
             <div class="card-body">
                 <h5 class="mb-3">Building Organisation...</h5>
 
-                <!-- Phase 1: Team Structure -->
                 <div class="d-flex align-items-center mb-3" id="phase-structure">
                     <span class="spinner-border spinner-border-sm me-2" id="spin-structure"></span>
                     <span id="icon-structure" style="display:none;" class="me-2 text-success">&#10003;</span>
                     <span>Designing organisational structure...</span>
                 </div>
 
-                <!-- Phase 2: Agent creation progress -->
                 <div id="agent-creation-list"></div>
 
                 <div id="auto-progress-error" class="text-danger mt-2" style="display:none;"></div>
-            </div>
-        </div>
-
-        <!-- Manual Add Section -->
-        <div class="card mb-4" id="manual-add-card">
-            <div class="card-body">
-                <h5 class="mb-2">Add Agent Manually</h5>
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control" id="manual-name" placeholder="e.g. Sarah" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Job Title</label>
-                        <input type="text" class="form-control" id="manual-jobtitle" placeholder="e.g. Lead Designer" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Purpose</label>
-                        <input type="text" class="form-control" id="manual-purpose" placeholder="Brief description..." />
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" id="btn-manual-add" class="btn btn-outline-primary w-100">Add</button>
-                    </div>
-                </div>
-                <div id="manual-error" class="text-danger small mt-2" style="display:none;"></div>
-            </div>
-        </div>
-
-        <!-- Manual Add Progress Modal -->
-        <div class="modal fade" id="manualProgressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Creating Agent</h5>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3 d-flex align-items-center">
-                            <span class="spinner-border spinner-border-sm me-2" id="manual-spin-persona"></span>
-                            <span id="manual-icon-persona" style="display:none;" class="me-2 text-success">&#10003;</span>
-                            <span>Generating persona &amp; skills...</span>
-                        </div>
-                        <div id="manual-progress-error" class="text-danger small" style="display:none;"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -118,7 +72,7 @@
                 <div id="team-roster">
                     @if (Model.Agents.Count == 0)
                     {
-                        <p class="text-muted" id="empty-roster-msg">No agents yet. Use the options above to build your team.</p>
+                        <p class="text-muted" id="empty-roster-msg">No team members yet. Click <strong>Generate Organisation</strong> above to build your team.</p>
                     }
                     @foreach (var agent in Model.Agents)
                     {
@@ -193,7 +147,6 @@
             return div.innerHTML;
         }
 
-        // --- Auto-Generate ---
         document.getElementById("btn-auto-generate").addEventListener("click", function () {
             var btn = this;
             btn.disabled = true;
@@ -208,19 +161,16 @@
             var headers = { "Content-Type": "application/json" };
             var body = JSON.stringify({ projectName: projectName, projectDescription: projectDescription });
 
-            // Step 1: Get team structure
             fetch("@Url.Action("GenerateTeamStructure", "Project")", { method: "POST", headers: headers, body: body })
             .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
             .then(function (result) {
                 if (!result.ok || !result.data.roles) throw new Error(result.data.error || "Failed to generate team structure");
 
-                // Structure done
                 document.getElementById("spin-structure").style.display = "none";
                 document.getElementById("icon-structure").style.display = "";
 
                 var roles = result.data.roles;
 
-                // Build progress list for each agent
                 var listEl = document.getElementById("agent-creation-list");
                 roles.forEach(function (role, i) {
                     var item = document.createElement("div");
@@ -236,12 +186,11 @@
                     listEl.appendChild(item);
                 });
 
-                // Step 2: Create agents sequentially
                 return createAgentsSequentially(roles, 0);
             })
             .then(function () {
                 btn.innerHTML = 'Organisation Generated';
-                btn.className = "btn btn-success";
+                btn.className = "btn btn-success btn-lg";
             })
             .catch(function (err) {
                 document.getElementById("spin-structure").style.display = "none";
@@ -283,7 +232,6 @@
                     icon.textContent = "\u2717";
                     icon.className = "me-2 text-danger agent-icon";
                     icon.style.display = "";
-                    // Continue with next agent even on failure
                 } else {
                     icon.style.display = "";
                     addAgentToRoster(result.data.agent);
@@ -291,54 +239,5 @@
                 return createAgentsSequentially(roles, index + 1);
             });
         }
-
-        // --- Manual Add ---
-        document.getElementById("btn-manual-add").addEventListener("click", function () {
-            var name = document.getElementById("manual-name").value.trim();
-            var jobTitle = document.getElementById("manual-jobtitle").value.trim();
-            var purpose = document.getElementById("manual-purpose").value.trim();
-            var errorDiv = document.getElementById("manual-error");
-            errorDiv.style.display = "none";
-
-            if (!name || !jobTitle) {
-                errorDiv.textContent = "Name and Job Title are required.";
-                errorDiv.style.display = "";
-                return;
-            }
-
-            // Show progress modal
-            document.getElementById("manual-spin-persona").style.display = "";
-            document.getElementById("manual-icon-persona").style.display = "none";
-            document.getElementById("manual-progress-error").style.display = "none";
-            var modal = new bootstrap.Modal(document.getElementById("manualProgressModal"));
-            modal.show();
-
-            var headers = { "Content-Type": "application/json" };
-            var body = JSON.stringify({ name: name, jobTitle: jobTitle, purpose: purpose });
-
-            fetch("@Url.Action("CreateAgentFromRole", "Project")", { method: "POST", headers: headers, body: body })
-            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
-            .then(function (result) {
-                if (!result.ok || !result.data.success) throw new Error(result.data.error || "Failed to create agent");
-
-                document.getElementById("manual-spin-persona").style.display = "none";
-                document.getElementById("manual-icon-persona").style.display = "";
-
-                addAgentToRoster(result.data.agent);
-
-                // Clear form
-                document.getElementById("manual-name").value = "";
-                document.getElementById("manual-jobtitle").value = "";
-                document.getElementById("manual-purpose").value = "";
-
-                setTimeout(function () { modal.hide(); }, 500);
-            })
-            .catch(function (err) {
-                document.getElementById("manual-spin-persona").style.display = "none";
-                document.getElementById("manual-progress-error").textContent = err.message;
-                document.getElementById("manual-progress-error").style.display = "";
-                setTimeout(function () { modal.hide(); }, 2000);
-            });
-        });
     </script>
 }

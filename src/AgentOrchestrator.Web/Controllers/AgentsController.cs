@@ -47,7 +47,7 @@ public class AgentsController : Controller
 
         var project = await _projectRepo.GetAsync();
         var vm = ToViewModel(agent, agents);
-        vm.ProjectName = project?.Name ?? "";
+        vm.ProjectName = project?.CompanyName ?? "";
         return View(vm);
     }
 
