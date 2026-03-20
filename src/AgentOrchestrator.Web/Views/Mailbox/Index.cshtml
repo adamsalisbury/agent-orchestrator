@@ -5,33 +5,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Agents</h2>
-    <div>
-        <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#resetModal">Reset Environment</button>
-        <a asp-action="Create" class="btn btn-primary">Add Agent</a>
-    </div>
-</div>
-
-<!-- Reset Confirmation Modal -->
-<div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="resetModalLabel">Reset Environment</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>This will <strong>permanently delete all agents and their messages</strong>.</p>
-                <p class="mb-0">Are you sure you want to continue?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form asp-action="ResetEnvironment" method="post" class="d-inline">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-danger">Yes, delete everything</button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <a asp-action="Create" class="btn btn-primary">Add Agent</a>
 </div>
 
 @if (!Model.Any())

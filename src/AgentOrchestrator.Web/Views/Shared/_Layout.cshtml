@@ -27,7 +27,7 @@
                             <a class="nav-link" asp-controller="Mailbox" asp-action="Index">Agents</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Project" asp-action="Index">Projects</a>
+                            <a class="nav-link" asp-controller="Project" asp-action="Index">Project</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Mailbox" asp-action="AllMessages">All Messages</a>
@@ -40,6 +40,9 @@
                         <span id="theme-icon-light" style="display:none;">&#9788;</span>
                         <span id="theme-icon-dark">&#9790;</span>
                     </button>
+                    <button type="button" class="btn btn-sm btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#resetModal" title="Reset Environment">
+                        Reset
+                    </button>
                 </div>
             </div>
         </nav>
@@ -48,6 +51,29 @@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
+    </div>
+
+    <!-- Reset Environment Modal -->
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="resetModalLabel">Reset Environment</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will <strong>permanently delete all agents and their messages</strong>.</p>
+                    <p class="mb-0">Are you sure you want to continue?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/Mailbox/ResetEnvironment" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">Yes, delete everything</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">
