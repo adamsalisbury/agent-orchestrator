@@ -37,6 +37,15 @@ cd agent-orchestrator/src
 dotnet build AgentOrchestrator.sln
 ```
 
+## Running Tests
+
+```bash
+cd src
+dotnet test
+```
+
+This runs the xUnit test suite covering all Core service logic.
+
 ## Running the Application
 
 ```bash
@@ -77,8 +86,8 @@ Configuration is in `src/AgentOrchestrator.Web/appsettings.json`:
 
 All data is stored in `src/AgentOrchestrator.Web/App_Data/`. This directory is created automatically and contains:
 
-- Agent personas, avatars, and conversation threads
-- Project configuration
+- Agent personas, avatars, workspaces, and conversation threads
+- Project configuration and shared files
 - Request tracking data
 
 The `App_Data/` directory is excluded from version control via `.gitignore`.
@@ -94,6 +103,8 @@ ASPNETCORE_URLS=http://0.0.0.0:8080 dotnet run --project AgentOrchestrator.Web
 ## Verifying the Setup
 
 1. Open `http://localhost:5181` in a browser
-2. You should see the landing page with options to create agents and send requests
-3. Navigate to **Projects** and create a project to confirm the data layer is working
-4. Create an agent — the persona generation step confirms Claude Code CLI integration is functioning
+2. You'll be redirected to the **setup wizard** (since no project is configured yet)
+3. Enter a project name and description, then click **Next: Build Team**
+4. Click **Generate Organisation** — this calls Claude Code to design an org chart and then generates each agent's persona and skills. If this completes, the Claude Code CLI integration is working.
+5. Click **Finish Setup** to reach the home page
+6. Navigate to **Agents** to see your team with avatars, role badges, and reporting lines

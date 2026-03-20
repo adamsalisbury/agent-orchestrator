@@ -1,14 +1,17 @@
 # Agent Orchestrator
 
-A multi-agent orchestration platform that enables creating, managing, and coordinating teams of AI agents. Agents can receive tasks, hold threaded conversations, and delegate work to each other based on their specialised skills and personas.
+A multi-agent orchestration platform that enables creating, managing, and coordinating teams of AI agents. Agents are organised into a reporting hierarchy with a CEO at the top, can receive tasks, hold threaded conversations, and delegate work up and down the chain of command.
 
 ## What It Does
 
-- **Create AI agents** with custom personas, job titles, and skill sets — personas are generated via Claude Code CLI
-- **Send requests** to agents and track threaded conversations
-- **Agent-to-agent delegation** — agents can consult teammates for specialised expertise, up to 5 levels deep
-- **Project context** — define a project that all agents understand and work within, with shared workspace directories
+- **Setup wizard** — first-run wizard guides you through project creation and team generation
+- **Auto-generated organisations** — describe your project and an entire org chart (CEO + 5-10 tailored roles) is created automatically, each with a generated persona and skill set
+- **Organisational hierarchy** — agents are connected via a reporting structure; delegation is restricted to direct reports and managers
+- **Developer workspaces** — agents flagged as developers get personal workspace directories where they write code, browsable via a built-in file viewer
+- **Agent-to-agent delegation** — agents delegate tasks through the org chart, up to 5 levels deep
+- **Threaded conversations** — send messages to agents and track multi-turn conversations
 - **Real-time updates** — SignalR pushes live status changes as agents process requests
+- **Role badges** — developer agents display a `</>` badge, the CEO gets a gold star, both on avatars and in the UI
 - **Dark/light mode** — theme toggle with persistent preference
 
 ## Tech Stack
@@ -21,7 +24,8 @@ A multi-agent orchestration platform that enables creating, managing, and coordi
 | **AI Backend** | Claude Code CLI |
 | **Data Storage** | File-based (JSON + Markdown in `App_Data/`) |
 | **Frontend** | Bootstrap 5, jQuery, Razor Views |
-| **Avatars** | Procedurally generated SVGs |
+| **Testing** | xUnit, NSubstitute |
+| **Avatars** | Procedurally generated SVGs with role badges |
 
 ## Project Structure
 
@@ -29,10 +33,11 @@ A multi-agent orchestration platform that enables creating, managing, and coordi
 agent-orchestrator/
 ├── src/
 │   ├── AgentOrchestrator.sln
-│   ├── AgentOrchestrator.Core/          # Domain models, interfaces, services
-│   ├── AgentOrchestrator.Infrastructure/ # File repositories, Claude CLI runner, avatar generation
-│   └── AgentOrchestrator.Web/           # MVC controllers, views, SignalR hub, background services
-└── docs/                                # Documentation
+│   ├── AgentOrchestrator.Core/            # Domain models, services, prompts, interfaces
+│   ├── AgentOrchestrator.Core.Tests/      # Unit tests (xUnit + NSubstitute)
+│   ├── AgentOrchestrator.Infrastructure/  # File repositories, Claude CLI runner, avatar generation
+│   └── AgentOrchestrator.Web/             # MVC controllers (thin), views, SignalR hub
+└── docs/                                  # Documentation
 ```
 
 ## Dependencies
@@ -44,7 +49,7 @@ agent-orchestrator/
 
 ### NuGet Packages
 
-The project uses only built-in .NET 8.0 libraries — no external NuGet packages are required.
+- **NSubstitute** (test project only) — mocking framework for unit tests
 
 ### Frontend Libraries (bundled in `wwwroot/lib/`)
 
@@ -70,21 +75,30 @@ dotnet run --project AgentOrchestrator.Web
 
 The application starts on `http://localhost:5181`.
 
+### Running Tests
+
+```bash
+cd src
+dotnet test
+```
+
 ### First Steps
 
-1. Navigate to the web UI
-2. Create a project with a name and description
-3. Create one or more agents — provide a name and job title, and the system will generate a persona and skills
-4. Send a request to an agent and watch the threaded conversation unfold
-5. Agents will delegate to teammates when a task requires specialised expertise
+1. Navigate to the web UI — you'll be redirected to the setup wizard
+2. Enter a project name and description
+3. Click **Generate Organisation** to auto-create a team with a CEO and tailored roles, or add agents manually
+4. Click **Finish Setup** to start using the platform
+5. Send a message to the CEO and watch tasks cascade down the org chart
 
 ## Architecture
 
 The solution follows a clean layered architecture:
 
-- **Core** — domain models (`Agent`, `Project`, `ThreadMessage`, `ClaudeRequest`), service interfaces, and orchestration logic
+- **Core** — domain models (`Agent`, `Project`, `ThreadMessage`, `TeamRole`), service interfaces, domain services (`AgentService`, `TeamService`, `ThreadOrchestrationService`), and centralised prompt templates (`Prompts`)
 - **Infrastructure** — file-based repositories persisting data as JSON/Markdown under `App_Data/`, the Claude Code CLI runner, and avatar generation
-- **Web** — ASP.NET Core MVC application with Razor views, a SignalR hub for real-time notifications, and a background polling service that monitors request completion
+- **Web** — thin ASP.NET Core MVC controllers (presentation only), Razor views, SignalR hub for real-time notifications, and a background polling service
+
+Controllers delegate immediately to Core services — all domain logic, prompt construction, and Claude Code interaction lives in the Core layer.
 
 All data is stored on disk — no database setup required. Agent conversations, personas, and project configuration are persisted as structured files.
 

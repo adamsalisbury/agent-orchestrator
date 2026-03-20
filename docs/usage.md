@@ -1,47 +1,50 @@
 # Usage Guide
 
-## Creating a Project
+## Setup Wizard
 
-Before creating agents, set up a project to give them shared context.
+On first launch, you'll be redirected to the setup wizard.
 
-1. Navigate to **Projects** from the top navigation
-2. Click **Edit** to set the project name and description
-3. Describe what the team is working on — all agents will receive this context with every request
+### Step 1: Project Details
 
-The project also provides:
+1. Enter a **project name** (e.g., "CloudSync Platform")
+2. Enter a **project description** — describe what the team is building, the goals, target audience, and tech stack. The more detail you provide, the better the auto-generated team will match your needs.
+3. Click **Next: Build Team**
 
-- A **workspace** directory where agents can read and write code
-- A **shared** directory for exchanging files between agents
+### Step 2: Build Team
 
-## Creating Agents
+You have two options:
 
-1. Navigate to **Agents** from the top navigation
-2. Click **Create New Agent**
-3. Fill in:
-   - **Name** — the agent's display name
-   - **Job Title** — their role (e.g., "Senior Backend Engineer", "UX Designer")
-   - **Purpose** (optional) — additional context for persona generation
-4. Click **Generate** — the system uses Claude Code to create a persona and skill set
-5. Review and edit the generated persona and skills
-6. Click **Save** to create the agent
+#### Auto-Generate Organisation
 
-Each agent gets a unique procedurally generated avatar.
+Click **Generate Organisation** to have an org chart designed automatically based on your project description. This creates 5-10 agents with:
 
-## Sending Requests
+- A **CEO** at the top
+- Managers and specialists tailored to the project type
+- Developers flagged with personal workspaces
+- Reporting lines connecting every agent
 
-1. Navigate to **New Request** from the top navigation (or click the button on the home page)
-2. Select the target agent from the dropdown — a preview of their avatar appears
-3. Write your message
-4. Click **Send**
+Each agent gets a generated persona and skill set. Progress is shown as each agent is created.
 
-This creates a new thread. The agent processes the request asynchronously.
+#### Add Agents Manually
+
+Use the inline form to add individual agents by name, job title, and purpose. Each one gets a generated persona and skills.
+
+Once your team is ready, click **Finish Setup** to proceed to the home page.
+
+## Sending Messages
+
+1. From the **Agents** page, click **Threads** on any agent
+2. Click **New Message** to compose a message to that agent
+3. Alternatively, use the **Compose** page to select any agent from a dropdown
+
+The agent processes the message asynchronously. For the CEO, try sending a high-level directive — they'll delegate tasks down the org chart to the appropriate team members.
 
 ## Viewing Conversations
 
-### Agent Inbox
+### Agent Threads
 
-- Navigate to **Agents** to see all agents with their request counts
-- Click an agent's name to see their threads
+- Navigate to **Agents** from the top navigation
+- Click **Threads** on an agent to see all their conversation threads
 - Each thread shows message count, preview, status, and last activity
 
 ### Thread View
@@ -51,31 +54,53 @@ This creates a new thread. The agent processes the request asynchronously.
 - Pending messages show a spinner while the agent is processing
 - Use the reply form at the bottom to continue the conversation
 
-### All Messages
+### Messages
 
-- Navigate to **All Messages** for a global view across all agents
-- Messages can be filtered and searched
-- Click any message to view it in detail
+- Navigate to **Messages** from the top navigation for a global view across all agents
+- Click any message to view it in full detail with sender/recipient avatars
 
 ## Understanding Delegation
 
-When an agent determines that another team member is better suited for part of a task:
+Delegation follows the organisational hierarchy:
 
-1. The agent emits a delegation directive (handled automatically)
-2. A **consultation thread** is created in the target agent's inbox
-3. The target agent processes the question
-4. The answer is fed back to the original agent
-5. The original agent incorporates the consultation into its response
+1. An agent determines a task should be handled by a direct report or escalated to their manager
+2. The agent emits a delegation directive (handled automatically)
+3. A **consultation thread** is created for the target agent
+4. The target agent processes the task — if they're a developer, they work in their own workspace
+5. The result is fed back to the original agent
 
-Delegation indicators appear as badges on messages. You can follow the consultation chain by viewing the target agent's threads.
+Delegation is **restricted to the reporting line** — an agent can only communicate with their direct manager and direct reports. This enables realistic chains: CEO delegates to VP, VP delegates to Developer, results cascade back up.
 
 Delegation is limited to 5 levels deep to prevent infinite loops.
+
+## Developer Workspaces
+
+Developer agents write code in personal workspace directories.
+
+### Browsing a Workspace
+
+1. Navigate to **Agents**
+2. Click the **`</>` Workspace** button on any developer agent
+3. The workspace browser shows:
+   - **Left panel (25%)** — directory and file navigator with `..` to go up (capped at the workspace root)
+   - **Right panel (75%)** — plain text file viewer for the selected file
+
+### Accessing Workspaces Externally
+
+Developer workspaces are stored at `App_Data/agent-{id}/workspace/`. You can open these directories directly in VS Code or any editor — either locally or via SSH into the container running the application.
+
+## Org Chart & Role Badges
+
+- **CEO** agents display a gold star badge on their avatar and a "CEO" label in the UI
+- **Developer** agents display a `</>` badge on their avatar and a code label in the UI
+- Each agent card shows who they report to
+- The **Project** page shows the full team roster
 
 ## Real-Time Updates
 
 The application uses SignalR to push updates when:
 
-- An agent finishes processing a request
+- An agent finishes processing a message
 - Message status changes (Pending → Processing → Completed/Failed)
 
 Pages automatically refresh relevant content when updates arrive — no manual reload needed.
@@ -91,4 +116,4 @@ To start fresh — removing all agents, threads, and project data:
 1. Click the **Reset** button in the navigation bar
 2. Confirm the action in the modal dialog
 
-This deletes all data in `App_Data/` and is irreversible.
+This deletes all data in `App_Data/` and is irreversible. You'll be redirected to the setup wizard.
