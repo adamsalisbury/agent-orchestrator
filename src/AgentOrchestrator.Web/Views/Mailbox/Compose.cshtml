@@ -9,6 +9,7 @@
     <div class="card-body">
         <form asp-action="Compose" method="post">
             @Html.AntiForgeryToken()
+
             <div class="mb-3">
                 <label asp-for="AgentId" class="form-label"><strong>To Agent</strong></label>
                 <div class="d-flex align-items-start gap-3">
@@ -27,6 +28,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="mb-3">
                 <label asp-for="Content" class="form-label"><strong>Message</strong></label>
                 <textarea asp-for="Content" class="form-control" rows="6" placeholder="Type your message..."></textarea>
@@ -41,9 +43,11 @@
 
 @section Scripts {
     <script>
-        document.getElementById("agent-select").addEventListener("change", function () {
-            var avatarDiv = document.getElementById("agent-avatar");
-            var avatarImg = document.getElementById("agent-avatar-img");
+        var agentSelect = document.getElementById("agent-select");
+        var avatarDiv = document.getElementById("agent-avatar");
+        var avatarImg = document.getElementById("agent-avatar-img");
+
+        agentSelect.addEventListener("change", function () {
             if (this.value) {
                 avatarImg.src = "@Url.Action("Avatar", "Mailbox")/" + this.value;
                 avatarDiv.style.display = "";
@@ -51,10 +55,7 @@
                 avatarDiv.style.display = "none";
             }
         });
-        // Show avatar on page load if agent pre-selected
-        (function() {
-            var select = document.getElementById("agent-select");
-            if (select.value) { select.dispatchEvent(new Event("change")); }
-        })();
+
+        if (agentSelect.value) { agentSelect.dispatchEvent(new Event("change")); }
     </script>
 }

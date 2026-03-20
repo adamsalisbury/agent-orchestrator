@@ -17,7 +17,7 @@ public class FileAgentRepository : IAgentRepository
         Directory.CreateDirectory(_baseDirectory);
     }
 
-    public async Task<Agent> CreateAsync(string name, string jobTitle, string persona)
+    public async Task<Agent> CreateAsync(string name, string jobTitle, string persona, List<string>? skills = null)
     {
         await _lock.WaitAsync();
         try
@@ -32,10 +32,12 @@ public class FileAgentRepository : IAgentRepository
                 Name = name,
                 JobTitle = jobTitle,
                 Persona = persona,
+                Skills = skills ?? new(),
                 CreatedAt = DateTime.UtcNow
             };
 
-            var content = $"---\nagentId: {agent.Id}\nname: {agent.Name}\njobTitle: {agent.JobTitle}\ncreatedAt: {agent.CreatedAt:O}\n---\n\n{agent.Persona}";
+            var skillsCsv = string.Join(",", agent.Skills);
+            var content = $"---\nagentId: {agent.Id}\nname: {agent.Name}\njobTitle: {agent.JobTitle}\nskills: {skillsCsv}\ncreatedAt: {agent.CreatedAt:O}\n---\n\n{agent.Persona}";
             await File.WriteAllTextAsync(Path.Combine(agentDir, "persona.md"), content);
 
             var avatarSvg = AvatarGenerator.Generate(id);
@@ -147,6 +149,10 @@ public class FileAgentRepository : IAgentRepository
             Id = meta.GetValueOrDefault("agentId", ""),
             Name = meta.GetValueOrDefault("name", ""),
             JobTitle = meta.GetValueOrDefault("jobTitle", ""),
+            Skills = meta.GetValueOrDefault("skills", "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .ToList(),
             CreatedAt = DateTime.TryParse(meta.GetValueOrDefault("createdAt", ""), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt) ? dt : DateTime.UtcNow,
             Persona = body
         };

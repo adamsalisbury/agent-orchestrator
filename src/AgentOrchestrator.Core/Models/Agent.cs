@@ -6,6 +6,7 @@ public class Agent
     public string Name { get; set; } = string.Empty;
     public string JobTitle { get; set; } = string.Empty;
     public string Persona { get; set; } = string.Empty;
+    public List<string> Skills { get; set; } = new();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string DisplayName => $"{Name} ({JobTitle})";
 }

@@ -11,15 +11,18 @@ namespace AgentOrchestrator.Web.Controllers;
 public class MailboxController : Controller
 {
     private readonly IAgentRepository _agentRepo;
+    private readonly IClaudeCodeRunner _runner;
     private readonly ThreadOrchestrationService _threadService;
     private readonly PendingMessageTracker _tracker;
 
     public MailboxController(
         IAgentRepository agentRepo,
+        IClaudeCodeRunner runner,
         ThreadOrchestrationService threadService,
         PendingMessageTracker tracker)
     {
         _agentRepo = agentRepo;
+        _runner = runner;
         _threadService = threadService;
         _tracker = tracker;
     }
@@ -51,8 +54,70 @@ public class MailboxController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        await _agentRepo.CreateAsync(model.Name, model.JobTitle, model.Persona);
+        var skills = (model.Skills ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToList();
+
+        await _agentRepo.CreateAsync(model.Name, model.JobTitle, model.Persona, skills);
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GeneratePersona([FromBody] GenerateAgentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.JobTitle))
+            return BadRequest(new { error = "Job title is required." });
+
+        var purposeContext = string.IsNullOrWhiteSpace(request.Purpose)
+            ? ""
+            : $" Their purpose is: \"{request.Purpose}\".";
+
+        var prompt = $"Generate an agent persona/system prompt for an AI agent whose job title is: \"{request.JobTitle}\".{purposeContext} " +
+                     "Cover their expertise, work approach, and responsibilities. " +
+                     "The agent will be part of a software development team collaborating with other specialist agents. " +
+                     "Keep it under 100 words. Output ONLY the persona text, no preamble or explanation.";
+
+        try
+        {
+            var result = await _runner.ExecuteAsync(prompt);
+            return Json(new { persona = result.Trim() });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GenerateSkills([FromBody] GenerateAgentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.JobTitle))
+            return BadRequest(new { error = "Job title is required." });
+
+        var purposeContext = string.IsNullOrWhiteSpace(request.Purpose)
+            ? ""
+            : $" Their purpose is: \"{request.Purpose}\".";
+
+        var prompt = $"List 5-8 short skill tags for an AI agent whose job title is: \"{request.JobTitle}\".{purposeContext} " +
+                     "These are concise skill labels like \"UI/UX\", \"React\", \"API Design\", \"Code Review\". " +
+                     "Output ONLY a comma-separated list, no numbering, no explanation.";
+
+        try
+        {
+            var result = await _runner.ExecuteAsync(prompt);
+            var skills = result.Trim()
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim().Trim('"', '\''))
+                .Where(s => s.Length > 0)
+                .ToList();
+            return Json(new { skills });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [HttpPost]
@@ -330,6 +395,7 @@ public class MailboxController : Controller
         Name = a.Name,
         JobTitle = a.JobTitle,
         Persona = a.Persona,
+        Skills = a.Skills,
         CreatedAt = a.CreatedAt
     };
 

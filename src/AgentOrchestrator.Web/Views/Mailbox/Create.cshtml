@@ -5,27 +5,211 @@
 
 <h2>Add Agent</h2>
 
-<div class="card mt-3">
+<!-- Step 1: Basic Info -->
+<div id="step-basics" class="card mt-3">
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label"><strong>Name</strong></label>
+            <input type="text" class="form-control" id="field-name" placeholder="e.g. Brian" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label"><strong>Job Title</strong></label>
+            <input type="text" class="form-control" id="field-jobtitle" placeholder="e.g. UI/UX Designer" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label"><strong>Purpose</strong></label>
+            <textarea class="form-control" id="field-purpose" rows="3" placeholder="Brief description of what this agent is for..."></textarea>
+        </div>
+        <div id="basics-error" class="text-danger small mb-2" style="display:none;"></div>
+        <button type="button" id="btn-generate" class="btn btn-primary">Create Agent</button>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+</div>
+
+<!-- Step 2: Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Creating Agent</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 d-flex align-items-center" id="step-persona">
+                    <span class="spinner-border spinner-border-sm me-2" id="spin-persona"></span>
+                    <span id="icon-persona" style="display:none;" class="me-2 text-success">&#10003;</span>
+                    <span>Generating Persona...</span>
+                </div>
+                <div class="mb-3 d-flex align-items-center" id="step-skills">
+                    <span class="spinner-border spinner-border-sm me-2" id="spin-skills" style="display:none;"></span>
+                    <span id="icon-skills" style="display:none;" class="me-2 text-success">&#10003;</span>
+                    <span class="text-muted" id="label-skills">Generating Skills...</span>
+                </div>
+                <div id="progress-error" class="text-danger small" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 3: Review & Confirm -->
+<div id="step-review" class="card mt-3" style="display:none;">
     <div class="card-body">
         <form asp-action="Create" method="post">
             @Html.AntiForgeryToken()
+            <input type="hidden" name="Name" id="submit-name" />
+            <input type="hidden" name="JobTitle" id="submit-jobtitle" />
+            <input type="hidden" name="Skills" id="submit-skills" />
+
             <div class="mb-3">
-                <label asp-for="Name" class="form-label"><strong>Name</strong></label>
-                <input asp-for="Name" class="form-control" placeholder="e.g. Brian" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label class="form-label"><strong>Name</strong></label>
+                <p id="review-name" class="form-control-plaintext"></p>
             </div>
             <div class="mb-3">
-                <label asp-for="JobTitle" class="form-label"><strong>Job Title</strong></label>
-                <input asp-for="JobTitle" class="form-control" placeholder="e.g. UI/UX Designer" />
-                <span asp-validation-for="JobTitle" class="text-danger"></span>
+                <label class="form-label"><strong>Job Title</strong></label>
+                <p id="review-jobtitle" class="form-control-plaintext"></p>
             </div>
             <div class="mb-3">
-                <label asp-for="Persona" class="form-label"><strong>Persona</strong></label>
-                <textarea asp-for="Persona" class="form-control" rows="8" placeholder="Describe how this agent should behave..."></textarea>
-                <span asp-validation-for="Persona" class="text-danger"></span>
+                <label class="form-label"><strong>Persona</strong></label>
+                <textarea name="Persona" class="form-control" id="review-persona" rows="6"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Create Agent</button>
-            <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+            <div class="mb-3">
+                <label class="form-label"><strong>Skills</strong></label>
+                <div id="skills-tags" class="d-flex flex-wrap gap-2 mb-2"></div>
+                <div class="input-group input-group-sm" style="max-width: 300px;">
+                    <input type="text" class="form-control" id="new-skill-input" placeholder="Add a skill..." />
+                    <button type="button" class="btn btn-outline-secondary" id="btn-add-skill">Add</button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirm &amp; Save</button>
+            <button type="button" id="btn-back" class="btn btn-outline-secondary ms-2">Back</button>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        var skills = [];
+
+        function renderSkills() {
+            var container = document.getElementById("skills-tags");
+            container.innerHTML = "";
+            skills.forEach(function (skill, i) {
+                var tag = document.createElement("span");
+                tag.className = "badge bg-info text-dark d-flex align-items-center";
+                tag.style.fontSize = "0.9rem";
+                tag.innerHTML = skill + ' <button type="button" class="btn-close btn-close-sm ms-1" style="font-size:0.6rem;" data-index="' + i + '"></button>';
+                tag.querySelector("button").addEventListener("click", function () {
+                    skills.splice(i, 1);
+                    renderSkills();
+                    syncSkills();
+                });
+                container.appendChild(tag);
+            });
+        }
+
+        function syncSkills() {
+            document.getElementById("submit-skills").value = skills.join(",");
+        }
+
+        // Add skill
+        document.getElementById("btn-add-skill").addEventListener("click", addSkill);
+        document.getElementById("new-skill-input").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { e.preventDefault(); addSkill(); }
+        });
+
+        function addSkill() {
+            var input = document.getElementById("new-skill-input");
+            var val = input.value.trim();
+            if (val && skills.indexOf(val) < 0) {
+                skills.push(val);
+                renderSkills();
+                syncSkills();
+            }
+            input.value = "";
+        }
+
+        // Back button
+        document.getElementById("btn-back").addEventListener("click", function () {
+            document.getElementById("step-review").style.display = "none";
+            document.getElementById("step-basics").style.display = "";
+        });
+
+        // Generate flow
+        document.getElementById("btn-generate").addEventListener("click", function () {
+            var name = document.getElementById("field-name").value.trim();
+            var jobTitle = document.getElementById("field-jobtitle").value.trim();
+            var purpose = document.getElementById("field-purpose").value.trim();
+            var errorDiv = document.getElementById("basics-error");
+            errorDiv.style.display = "none";
+
+            if (!name || !jobTitle) {
+                errorDiv.textContent = "Name and Job Title are required.";
+                errorDiv.style.display = "";
+                return;
+            }
+
+            // Reset progress modal
+            document.getElementById("spin-persona").style.display = "";
+            document.getElementById("icon-persona").style.display = "none";
+            document.getElementById("spin-skills").style.display = "none";
+            document.getElementById("icon-skills").style.display = "none";
+            document.getElementById("label-skills").className = "text-muted";
+            document.getElementById("progress-error").style.display = "none";
+
+            var modal = new bootstrap.Modal(document.getElementById("progressModal"));
+            modal.show();
+
+            var body = JSON.stringify({ jobTitle: jobTitle, purpose: purpose });
+            var headers = { "Content-Type": "application/json" };
+
+            // Step 1: Generate persona
+            fetch("@Url.Action("GeneratePersona", "Mailbox")", { method: "POST", headers: headers, body: body })
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (result) {
+                if (!result.ok || !result.data.persona) throw new Error(result.data.error || "Failed to generate persona");
+
+                // Persona done
+                document.getElementById("spin-persona").style.display = "none";
+                document.getElementById("icon-persona").style.display = "";
+                document.getElementById("spin-skills").style.display = "";
+                document.getElementById("label-skills").className = "";
+
+                var persona = result.data.persona;
+
+                // Step 2: Generate skills
+                return fetch("@Url.Action("GenerateSkills", "Mailbox")", { method: "POST", headers: headers, body: body })
+                .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+                .then(function (skillResult) {
+                    if (!skillResult.ok || !skillResult.data.skills) throw new Error(skillResult.data.error || "Failed to generate skills");
+
+                    // Skills done
+                    document.getElementById("spin-skills").style.display = "none";
+                    document.getElementById("icon-skills").style.display = "";
+
+                    skills = skillResult.data.skills;
+
+                    // Populate review
+                    document.getElementById("review-name").textContent = name;
+                    document.getElementById("review-jobtitle").textContent = jobTitle;
+                    document.getElementById("review-persona").value = persona;
+                    document.getElementById("submit-name").value = name;
+                    document.getElementById("submit-jobtitle").value = jobTitle;
+                    renderSkills();
+                    syncSkills();
+
+                    setTimeout(function () {
+                        modal.hide();
+                        document.getElementById("step-basics").style.display = "none";
+                        document.getElementById("step-review").style.display = "";
+                    }, 500);
+                });
+            })
+            .catch(function (err) {
+                document.getElementById("spin-persona").style.display = "none";
+                document.getElementById("spin-skills").style.display = "none";
+                document.getElementById("progress-error").textContent = err.message;
+                document.getElementById("progress-error").style.display = "";
+                setTimeout(function () { modal.hide(); }, 2000);
+            });
+        });
+    </script>
+}

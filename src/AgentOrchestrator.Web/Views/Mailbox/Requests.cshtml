@@ -63,7 +63,7 @@ else
                             <span class="badge bg-success">Complete</span>
                         }
                     </td>
-                    <td data-label="Last Activity" class="msg-activity">@thread.LastActivity.ToLocalTime().ToString("g")</td>
+                    <td data-label="Last Activity" class="msg-activity">@thread.LastActivity.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                     <td>
                         <a asp-action="Thread" asp-route-agentId="@Model.AgentId" asp-route-threadId="@thread.ThreadId" class="btn btn-sm btn-outline-secondary w-100">View</a>
                     </td>

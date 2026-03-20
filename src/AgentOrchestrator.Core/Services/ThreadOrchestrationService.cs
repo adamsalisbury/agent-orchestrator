@@ -13,6 +13,7 @@ public class ThreadOrchestrationService
 
     private readonly IThreadRepository _threadRepository;
     private readonly IAgentRepository _agentRepository;
+    private readonly IProjectRepository _projectRepository;
     private readonly IClaudeCodeRunner _runner;
     private readonly Channel<QueueItem> _queue;
     private readonly ConcurrentDictionary<string, ConsultationCallback> _callbacks = new();
@@ -20,11 +21,13 @@ public class ThreadOrchestrationService
     public ThreadOrchestrationService(
         IThreadRepository threadRepository,
         IAgentRepository agentRepository,
-        IClaudeCodeRunner runner)
+        IClaudeCodeRunner runner,
+        IProjectRepository projectRepository)
     {
         _threadRepository = threadRepository;
         _agentRepository = agentRepository;
         _runner = runner;
+        _projectRepository = projectRepository;
         _queue = Channel.CreateUnbounded<QueueItem>();
         Task.Run(ProcessQueueAsync);
     }
@@ -82,7 +85,6 @@ public class ThreadOrchestrationService
             var message = await _threadRepository.GetMessageAsync(item.AgentId, item.ThreadId, item.MessageNumber);
             if (message == null) continue;
 
-            // Only set to Processing if not already (re-runs keep it Processing)
             if (message.Status != MessageStatus.Processing)
             {
                 message.Status = MessageStatus.Processing;
@@ -98,23 +100,23 @@ public class ThreadOrchestrationService
                     .ToList();
 
                 var agent = await _agentRepository.GetAsync(item.AgentId);
-                var allAgents = await _agentRepository.GetAllAsync();
+                var teamAgents = await _agentRepository.GetAllAsync();
+                var project = await _projectRepository.GetAsync();
+                var workspaceDir = _projectRepository.GetWorkspacePath();
 
                 bool allowDelegation = !item.IsConsultation && item.DelegationDepth < MaxDelegationDepth;
-                var prompt = BuildPromptWithContext(agent, allAgents, prior, allowDelegation, item.ConsultationContext);
-                var response = await _runner.ExecuteAsync(prompt);
+                var prompt = BuildPromptWithContext(agent, teamAgents, prior, allowDelegation, item.ConsultationContext, project);
+                var response = await _runner.ExecuteAsync(prompt, workspaceDir);
 
-                // Check for delegation
                 var delegation = allowDelegation ? TryParseDelegation(response) : null;
 
                 if (delegation != null)
                 {
-                    var handled = await HandleDelegation(delegation, agent, allAgents, item);
+                    var handled = await HandleDelegation(delegation, agent, teamAgents, item);
                     if (handled)
-                        continue; // Don't save - message stays Processing until Brian re-runs
+                        continue;
                 }
 
-                // Normal response (or delegation target not found)
                 message.Content = response;
                 message.Status = MessageStatus.Completed;
                 message.SentAt = DateTime.UtcNow;
@@ -128,7 +130,6 @@ public class ThreadOrchestrationService
 
             await _threadRepository.SaveMessageAsync(item.AgentId, message);
 
-            // Check if this completed message triggers a callback (consultation response)
             var callbackKey = $"{item.AgentId}/{item.ThreadId}/{item.MessageNumber}";
             if (_callbacks.TryRemove(callbackKey, out var callback))
             {
@@ -137,27 +138,21 @@ public class ThreadOrchestrationService
         }
     }
 
-    /// <summary>
-    /// Brian delegated to another agent. Create the consultation thread and queue it.
-    /// Returns true if delegation was set up (message stays Processing).
-    /// </summary>
     private async Task<bool> HandleDelegation(
         DelegationDirective delegation,
         Agent? sourceAgent,
-        List<Agent> allAgents,
+        List<Agent> teamAgents,
         QueueItem item)
     {
-        var targetAgent = allAgents.FirstOrDefault(a =>
+        var targetAgent = teamAgents.FirstOrDefault(a =>
             a.Name.Equals(delegation.ToAgent, StringComparison.OrdinalIgnoreCase));
 
         if (targetAgent == null)
-            return false; // Let the normal response path handle it
+            return false;
 
-        // Build the accumulated consultation context
         var newContext = item.ConsultationContext ?? "";
         newContext += $"\n[You asked {targetAgent.Name} ({targetAgent.JobTitle})]: {delegation.Question}\n";
 
-        // Create consultation thread in the TARGET agent's space
         var consultThreadId = GenerateId();
 
         var consultQuestion = new ThreadMessage
@@ -184,7 +179,6 @@ public class ThreadOrchestrationService
         };
         await _threadRepository.SaveMessageAsync(targetAgent.Id, consultResponse);
 
-        // Store callback: when target responds, re-run origin agent with the answer
         _callbacks[$"{targetAgent.Id}/{consultThreadId}/2"] = new ConsultationCallback(
             item.AgentId,
             item.ThreadId,
@@ -192,7 +186,6 @@ public class ThreadOrchestrationService
             newContext,
             item.DelegationDepth + 1);
 
-        // Queue the target agent's response (consultation - no further delegation allowed)
         await _queue.Writer.WriteAsync(new QueueItem(
             targetAgent.Id, consultThreadId, 2,
             IsConsultation: true));
@@ -200,9 +193,6 @@ public class ThreadOrchestrationService
         return true;
     }
 
-    /// <summary>
-    /// A consulted agent (Sarah) has responded. Feed the answer back to the origin agent (Brian).
-    /// </summary>
     private async Task HandleConsultationComplete(
         ConsultationCallback callback,
         ThreadMessage consultationResponse,
@@ -211,11 +201,9 @@ public class ThreadOrchestrationService
         var respondingAgent = await _agentRepository.GetAsync(item.AgentId);
         var respondingName = respondingAgent?.Name ?? item.AgentId;
 
-        // Add the response to the accumulated context
         var updatedContext = callback.AccumulatedContext
             + $"[{respondingName} replied]: {consultationResponse.Content}\n";
 
-        // Re-queue the ORIGIN agent to process again with the consultation result
         await _queue.Writer.WriteAsync(new QueueItem(
             callback.OriginAgentId,
             callback.OriginThreadId,
@@ -262,7 +250,8 @@ public class ThreadOrchestrationService
         List<Agent> allAgents,
         List<ThreadMessage> priorMessages,
         bool allowDelegation,
-        string? consultationContext)
+        string? consultationContext,
+        Project? project)
     {
         var sb = new StringBuilder();
 
@@ -270,6 +259,30 @@ public class ThreadOrchestrationService
         {
             sb.AppendLine("You are operating under the following persona:");
             sb.AppendLine(agent.Persona);
+            sb.AppendLine();
+        }
+
+        if (project != null)
+        {
+            sb.AppendLine("=== PROJECT CONTEXT ===");
+            sb.AppendLine($"You are working on the project: {project.Name}");
+            sb.AppendLine($"Project description: {project.Description}");
+            sb.AppendLine();
+
+            var teammates = allAgents.Where(a => a.Id != agent?.Id).ToList();
+            if (teammates.Count > 0)
+            {
+                sb.AppendLine("Your project team members:");
+                foreach (var t in teammates)
+                    sb.AppendLine($"- {t.Name} ({t.JobTitle})");
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("SHARED DIRECTORY: There is a shared directory for this project where team members can exchange files (specs, notes, documentation).");
+            sb.AppendLine("Path: ../shared/ (relative to your working directory)");
+            sb.AppendLine();
+            sb.AppendLine("CODE WORKSPACE: Your current working directory is the project's code workspace. All code for this project should be written and managed here.");
+            sb.AppendLine("=== END PROJECT CONTEXT ===");
             sb.AppendLine();
         }
 
@@ -293,7 +306,6 @@ public class ThreadOrchestrationService
             sb.AppendLine("Please respond to the latest message, taking the full conversation history into account.");
         }
 
-        // Include consultation results if the agent consulted a colleague
         if (!string.IsNullOrWhiteSpace(consultationContext))
         {
             sb.AppendLine();
@@ -302,7 +314,6 @@ public class ThreadOrchestrationService
             sb.AppendLine("Now provide your final response to the user, incorporating what you learned from the consultation.");
         }
 
-        // Agent roster and delegation instructions
         if (allowDelegation && allAgents.Count > 1 && agent != null)
         {
             var others = allAgents.Where(a => a.Id != agent.Id).ToList();

@@ -1,0 +1,76 @@
+@model AgentOrchestrator.Web.Models.ProjectViewModel
+@{
+    ViewData["Title"] = "Project";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Project</h2>
+    <a asp-action="Edit" class="btn btn-outline-secondary">Edit</a>
+</div>
+
+@if (!Model.IsConfigured)
+{
+    <div class="alert alert-warning">
+        No project configured yet. <a asp-action="Edit" class="alert-link">Set up your project</a> to give your agents context about what they're building.
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-header"><strong>@Model.Name</strong></div>
+        <div class="card-body">
+            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">@Model.Description</pre>
+        </div>
+    </div>
+}
+
+<!-- Team -->
+<div class="card mb-3">
+    <div class="card-header"><strong>Team</strong> <span class="badge bg-secondary">@Model.Agents.Count</span></div>
+    <div class="card-body">
+        @if (!Model.Agents.Any())
+        {
+            <p class="text-muted mb-0">No agents yet. <a asp-controller="Mailbox" asp-action="Create">Create an agent</a> to add to the team.</p>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var agent in Model.Agents)
+                {
+                    <div class="col-12 col-md-6 mb-2">
+                        <div class="d-flex align-items-center">
+                            <img src="@Url.Action("Avatar", "Mailbox", new { id = agent.Id })"
+                                 alt="@agent.Name" width="36" height="36" class="rounded me-2" />
+                            <div class="flex-grow-1">
+                                <strong>@agent.Name</strong>
+                                <small class="text-muted d-block">@agent.JobTitle</small>
+                            </div>
+                            <a asp-controller="Mailbox" asp-action="Compose" asp-route-agentId="@agent.Id"
+                               class="btn btn-sm btn-outline-primary">Message</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Shared Files -->
+<div class="card mb-3">
+    <div class="card-header"><strong>Shared Files</strong></div>
+    <div class="card-body">
+        @if (!Model.SharedFiles.Any())
+        {
+            <p class="text-muted mb-0">No shared files yet. Agents can add files to the shared directory during conversations.</p>
+        }
+        else
+        {
+            <ul class="list-unstyled mb-0">
+                @foreach (var file in Model.SharedFiles)
+                {
+                    <li class="mb-1"><code>@file</code></li>
+                }
+            </ul>
+        }
+    </div>
+</div>

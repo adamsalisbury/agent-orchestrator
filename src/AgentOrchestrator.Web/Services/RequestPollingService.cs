@@ -28,7 +28,7 @@ public class RequestPollingService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(5000, stoppingToken);
+            await Task.Delay(2000, stoppingToken);
 
             foreach (var pending in _tracker.GetAll().ToList())
             {
@@ -45,7 +45,7 @@ public class RequestPollingService : BackgroundService
                             msg.MessageId,
                             Direction = msg.Direction.ToString(),
                             msg.Content,
-                            SentAt = msg.SentAt.ToLocalTime().ToString("G"),
+                            SentAt = msg.SentAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
                             Status = msg.Status.ToString(),
                             pending.AgentId,
                             pending.AgentName

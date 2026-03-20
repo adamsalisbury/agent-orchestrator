@@ -13,6 +13,7 @@ public class ThreadMessage
     // Set when a consulting agent responds in another agent's thread
     public string? FromAgentId { get; set; }
     public string? FromAgentName { get; set; }
+
 }
 
 public enum MessageDirection

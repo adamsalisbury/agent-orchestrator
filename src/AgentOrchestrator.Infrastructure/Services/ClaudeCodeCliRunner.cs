@@ -12,7 +12,7 @@ public class ClaudeCodeCliRunner : IClaudeCodeRunner
         _workingDirectory = workingDirectory;
     }
 
-    public async Task<string> ExecuteAsync(string prompt)
+    public async Task<string> ExecuteAsync(string prompt, string? workingDirectory = null)
     {
         var process = new Process
         {
@@ -20,7 +20,7 @@ public class ClaudeCodeCliRunner : IClaudeCodeRunner
             {
                 FileName = "claude",
                 Arguments = $"--dangerously-skip-permissions -p \"{EscapeForShell(prompt)}\"",
-                WorkingDirectory = _workingDirectory,
+                WorkingDirectory = workingDirectory ?? _workingDirectory,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -33,10 +33,12 @@ public class ClaudeCodeCliRunner : IClaudeCodeRunner
         var outputTask = process.StandardOutput.ReadToEndAsync();
         var errorTask = process.StandardError.ReadToEndAsync();
 
-        await process.WaitForExitAsync();
-
+        // Await output streams before WaitForExit to avoid deadlock
+        // when pipe buffers fill up
         var output = await outputTask;
         var error = await errorTask;
+
+        await process.WaitForExitAsync();
 
         if (process.ExitCode != 0 && string.IsNullOrWhiteSpace(output))
         {
