@@ -118,7 +118,8 @@ public class ThreadOrchestrationService
                 // Get connected agents (manager + direct reports) for delegation
                 var connectedAgents = GetConnectedAgents(agent, teamAgents);
 
-                bool allowDelegation = !item.IsConsultation && item.DelegationDepth < MaxDelegationDepth && connectedAgents.Count > 0;
+                bool hasConsultationResults = !string.IsNullOrWhiteSpace(item.ConsultationContext);
+                bool allowDelegation = !item.IsConsultation && !hasConsultationResults && item.DelegationDepth < MaxDelegationDepth && connectedAgents.Count > 0;
                 var prompt = BuildPromptWithContext(agent, teamAgents, connectedAgents, prior, allowDelegation, item.ConsultationContext, project);
                 var response = await _runner.ExecuteAsync(prompt, workingDir);
 
@@ -435,9 +436,12 @@ public class ThreadOrchestrationService
         if (!string.IsNullOrWhiteSpace(consultationContext))
         {
             sb.AppendLine();
-            sb.AppendLine("You consulted with a colleague to help answer this question. Here is the exchange:");
+            sb.AppendLine("=== COMPLETED DELEGATION RESULTS ===");
+            sb.AppendLine("You previously delegated work to a team member. That work is now COMPLETE. Here is the exchange:");
             sb.AppendLine(consultationContext);
-            sb.AppendLine("Now provide your final response to the user, incorporating what you learned from the consultation.");
+            sb.AppendLine("IMPORTANT: The delegated work has been done. Do NOT re-delegate the same task.");
+            sb.AppendLine("Summarise what was accomplished and provide your final response to the person who asked you. If the work involved code, confirm it has been written. If you need to report upward, do so now.");
+            sb.AppendLine("=== END DELEGATION RESULTS ===");
         }
 
         if (allowDelegation && connectedAgents.Count > 0 && agent != null)
