@@ -32,7 +32,7 @@ public class ComposeViewModel
     public List<AgentViewModel> AvailableAgents { get; set; } = new();
 }
 
-public class MessagesViewModel
+public class CommunicationViewModel
 {
     public List<MessageRowViewModel> Messages { get; set; } = new();
 }

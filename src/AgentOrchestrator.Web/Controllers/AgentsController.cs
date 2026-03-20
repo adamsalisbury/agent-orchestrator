@@ -224,9 +224,9 @@ public class AgentsController : Controller
         return RedirectToAction(nameof(Thread), new { agentId, threadId });
     }
 
-    // --- Messages ---
+    // --- Communication ---
 
-    public async Task<IActionResult> Messages()
+    public async Task<IActionResult> Communication()
     {
         var agents = await _agentRepo.GetAllAsync();
         var agentLookup = agents.ToDictionary(a => a.Id);
@@ -250,10 +250,10 @@ public class AgentsController : Controller
         }
 
         rows = rows.OrderByDescending(r => r.SentAtUtc).ToList();
-        return View(new MessagesViewModel { Messages = rows });
+        return View(new CommunicationViewModel { Messages = rows });
     }
 
-    public async Task<IActionResult> Message(string agentId, string threadId, int messageNumber)
+    public async Task<IActionResult> CommunicationDetail(string agentId, string threadId, int messageNumber)
     {
         var agents = await _agentRepo.GetAllAsync();
         var agentLookup = agents.ToDictionary(a => a.Id);
