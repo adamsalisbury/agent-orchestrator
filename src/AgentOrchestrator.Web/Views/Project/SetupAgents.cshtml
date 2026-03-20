@@ -117,7 +117,7 @@
                     @foreach (var agent in Model.Agents)
                     {
                         <div class="d-flex align-items-center p-2 mb-2 border rounded agent-roster-row">
-                            <img src="@Url.Action("Avatar", "Mailbox", new { id = agent.Id })" alt="avatar" width="40" height="40" class="rounded-circle me-3" />
+                            <img src="@Url.Action("Avatar", "Agents", new { id = agent.Id })" alt="avatar" width="40" height="40" class="rounded-circle me-3" />
                             <div class="flex-grow-1">
                                 <strong>@agent.Name</strong> <span class="text-muted">— @agent.JobTitle</span>
                                 <div class="mt-1">
@@ -161,7 +161,7 @@
             var row = document.createElement("div");
             row.className = "d-flex align-items-center p-2 mb-2 border rounded agent-roster-row";
 
-            var avatarUrl = "@Url.Action("Avatar", "Mailbox", new { id = "__ID__" })".replace("__ID__", agent.id);
+            var avatarUrl = "@Url.Action("Avatar", "Agents", new { id = "__ID__" })".replace("__ID__", agent.id);
             var skillsHtml = (agent.skills || []).map(function(s) {
                 return '<span class="badge bg-info text-dark me-1">' + escapeHtml(s) + '</span>';
             }).join("");

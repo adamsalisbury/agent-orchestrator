@@ -1,11 +1,11 @@
-@model AgentOrchestrator.Web.Models.ViewMessageViewModel
+@model AgentOrchestrator.Web.Models.MessageDetailViewModel
 @{
     ViewData["Title"] = $"Message {Model.MessageId}";
 }
 
 <div class="mb-3">
-    <a asp-action="AllMessages" class="btn btn-outline-secondary">
-        &larr; Back to All Messages
+    <a asp-action="Messages" class="btn btn-outline-secondary">
+        &larr; Back to Messages
     </a>
 </div>
 
@@ -18,7 +18,7 @@
                 <div class="d-flex align-items-center mb-2">
                     @if (Model.FromAvatarId != null)
                     {
-                        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.FromAvatarId })"
+                        <img src="@Url.Action("Avatar", "Agents", new { id = Model.FromAvatarId })"
                              alt="@Model.FromName" width="48" height="48" class="rounded me-3" />
                     }
                     else
@@ -45,7 +45,7 @@
                 <span class="text-muted me-2 fw-semibold">To:</span>
                 @if (Model.ToAvatarId != null)
                 {
-                    <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.ToAvatarId })"
+                    <img src="@Url.Action("Avatar", "Agents", new { id = Model.ToAvatarId })"
                          alt="@Model.ToName" width="24" height="24" class="rounded me-2" />
                 }
                 else

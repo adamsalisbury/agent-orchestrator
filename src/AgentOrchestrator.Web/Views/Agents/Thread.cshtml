@@ -5,12 +5,12 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3 page-header">
     <div class="d-flex align-items-center">
-        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.AgentId })"
+        <img src="@Url.Action("Avatar", "Agents", new { id = Model.AgentId })"
              alt="@Model.AgentName" width="40" height="40" class="rounded me-2" />
         <h2 class="mb-0">Thread <code>@Model.ThreadId</code> <small class="text-muted d-none d-sm-inline">@Model.AgentName</small></h2>
     </div>
     <div class="page-header-actions">
-        <a asp-action="Requests" asp-route-id="@Model.AgentId" class="btn btn-outline-secondary">Back to Requests</a>
+        <a asp-action="Threads" asp-route-id="@Model.AgentId" class="btn btn-outline-secondary">Back to Threads</a>
     </div>
 </div>
 

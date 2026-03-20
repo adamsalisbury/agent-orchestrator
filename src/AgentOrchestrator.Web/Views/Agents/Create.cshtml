@@ -162,7 +162,7 @@
             var headers = { "Content-Type": "application/json" };
 
             // Step 1: Generate persona
-            fetch("@Url.Action("GeneratePersona", "Mailbox")", { method: "POST", headers: headers, body: body })
+            fetch("@Url.Action("GeneratePersona", "Agents")", { method: "POST", headers: headers, body: body })
             .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
             .then(function (result) {
                 if (!result.ok || !result.data.persona) throw new Error(result.data.error || "Failed to generate persona");
@@ -176,7 +176,7 @@
                 var persona = result.data.persona;
 
                 // Step 2: Generate skills
-                return fetch("@Url.Action("GenerateSkills", "Mailbox")", { method: "POST", headers: headers, body: body })
+                return fetch("@Url.Action("GenerateSkills", "Agents")", { method: "POST", headers: headers, body: body })
                 .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
                 .then(function (skillResult) {
                     if (!skillResult.ok || !skillResult.data.skills) throw new Error(skillResult.data.error || "Failed to generate skills");

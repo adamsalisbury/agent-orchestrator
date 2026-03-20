@@ -1,16 +1,16 @@
-@model AgentOrchestrator.Web.Models.RequestsViewModel
+@model AgentOrchestrator.Web.Models.AgentThreadsViewModel
 @{
-    ViewData["Title"] = $"Requests - {Model.AgentName}";
+    ViewData["Title"] = $"Threads - {Model.AgentName}";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3 page-header">
     <div class="d-flex align-items-center">
-        <img src="@Url.Action("Avatar", "Mailbox", new { id = Model.AgentId })"
+        <img src="@Url.Action("Avatar", "Agents", new { id = Model.AgentId })"
              alt="@Model.AgentName" width="48" height="48" class="rounded me-3" />
-        <h2 class="mb-0">Requests <small class="text-muted d-none d-sm-inline">@Model.AgentName</small></h2>
+        <h2 class="mb-0">Threads <small class="text-muted d-none d-sm-inline">@Model.AgentName</small></h2>
     </div>
     <div class="page-header-actions d-flex align-items-center">
-        <a asp-action="Compose" asp-route-agentId="@Model.AgentId" class="btn btn-primary me-2">New Request</a>
+        <a asp-action="Compose" asp-route-agentId="@Model.AgentId" class="btn btn-primary me-2">New Message</a>
         <a asp-action="Index" class="btn btn-outline-secondary">Back to Agents</a>
     </div>
 </div>
@@ -18,7 +18,7 @@
 @if (!Model.Threads.Any())
 {
     <div class="alert alert-info">
-        No requests yet for this agent. Click <strong>New Request</strong> to send a message.
+        No threads yet for this agent. Click <strong>New Message</strong> to start a conversation.
     </div>
 }
 else

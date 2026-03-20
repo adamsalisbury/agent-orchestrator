@@ -49,7 +49,7 @@
 
         agentSelect.addEventListener("change", function () {
             if (this.value) {
-                avatarImg.src = "@Url.Action("Avatar", "Mailbox")/" + this.value;
+                avatarImg.src = "@Url.Action("Avatar", "Agents")/" + this.value;
                 avatarDiv.style.display = "";
             } else {
                 avatarDiv.style.display = "none";

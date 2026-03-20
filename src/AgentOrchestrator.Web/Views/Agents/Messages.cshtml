@@ -1,10 +1,10 @@
-@model AgentOrchestrator.Web.Models.AllMessagesViewModel
+@model AgentOrchestrator.Web.Models.MessagesViewModel
 @{
-    ViewData["Title"] = "All Messages";
+    ViewData["Title"] = "Messages";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3 page-header">
-    <h2>All Messages</h2>
+    <h2>Messages</h2>
     <span class="text-muted">@Model.Messages.Count messages</span>
 </div>
 
@@ -37,7 +37,7 @@ else
                             <div class="d-flex align-items-center">
                                 @if (msg.FromAvatarId != null)
                                 {
-                                    <img src="@Url.Action("Avatar", "Mailbox", new { id = msg.FromAvatarId })"
+                                    <img src="@Url.Action("Avatar", "Agents", new { id = msg.FromAvatarId })"
                                          alt="" width="24" height="24" class="rounded me-2 flex-shrink-0" />
                                 }
                                 else
@@ -52,7 +52,7 @@ else
                             <div class="d-flex align-items-center">
                                 @if (msg.ToAvatarId != null)
                                 {
-                                    <img src="@Url.Action("Avatar", "Mailbox", new { id = msg.ToAvatarId })"
+                                    <img src="@Url.Action("Avatar", "Agents", new { id = msg.ToAvatarId })"
                                          alt="" width="24" height="24" class="rounded me-2 flex-shrink-0" />
                                 }
                                 else
@@ -80,7 +80,7 @@ else
                         <td>
                             @if (!msg.IsPending)
                             {
-                                <a asp-action="ViewMessage"
+                                <a asp-action="Message"
                                    asp-route-agentId="@msg.AgentId"
                                    asp-route-threadId="@msg.ThreadId"
                                    asp-route-messageNumber="@msg.MessageNumber"

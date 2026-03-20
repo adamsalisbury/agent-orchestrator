@@ -23,7 +23,7 @@ else
                 <div class="card h-100">
                     <div class="card-body d-flex">
                         <div class="flex-shrink-0 me-3">
-                            <img src="@Url.Action("Avatar", "Mailbox", new { id = agent.Id })"
+                            <img src="@Url.Action("Avatar", "Agents", new { id = agent.Id })"
                                  alt="@agent.Name" width="80" height="80" class="rounded" />
                         </div>
                         <div class="flex-grow-1">
@@ -62,7 +62,7 @@ else
                             {
                                 <a asp-action="Workspace" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-success me-1" title="View Workspace">&lt;/&gt; Workspace</a>
                             }
-                            <a asp-action="Requests" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">Requests</a>
+                            <a asp-action="Threads" asp-route-id="@agent.Id" class="btn btn-sm btn-outline-primary">Threads</a>
                         </div>
                     </div>
                 </div>

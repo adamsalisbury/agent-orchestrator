@@ -24,13 +24,13 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Mailbox" asp-action="Index">Agents</a>
+                            <a class="nav-link" asp-controller="Agents" asp-action="Index">Agents</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Project" asp-action="Index">Project</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Mailbox" asp-action="AllMessages">All Messages</a>
+                            <a class="nav-link" asp-controller="Agents" asp-action="Messages">Messages</a>
                         </li>
                     </ul>
                     <button id="theme-toggle" class="btn btn-sm btn-outline-light ms-2" type="button" title="Toggle dark/light mode">
@@ -64,7 +64,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="/Mailbox/ResetEnvironment" method="post" class="d-inline">
+                    <form action="/Agents/ResetEnvironment" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-danger">Yes, delete everything</button>
                     </form>

@@ -1,6 +1,6 @@
 namespace AgentOrchestrator.Web.Models;
 
-public class RequestsViewModel
+public class AgentThreadsViewModel
 {
     public string AgentId { get; set; } = string.Empty;
     public string AgentName { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ public class ComposeViewModel
     public List<AgentViewModel> AvailableAgents { get; set; } = new();
 }
 
-public class AllMessagesViewModel
+public class MessagesViewModel
 {
     public List<MessageRowViewModel> Messages { get; set; } = new();
 }
@@ -58,7 +58,7 @@ public class MessageRowViewModel
     public bool IsPending => Status is "Pending" or "Processing";
 }
 
-public class ViewMessageViewModel
+public class MessageDetailViewModel
 {
     public string AgentId { get; set; } = string.Empty;
     public string ThreadId { get; set; } = string.Empty;

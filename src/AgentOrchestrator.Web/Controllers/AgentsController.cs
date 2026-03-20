@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgentOrchestrator.Web.Controllers;
 
-public class MailboxController : Controller
+public class AgentsController : Controller
 {
     private readonly IAgentRepository _agentRepo;
     private readonly IClaudeCodeRunner _runner;
     private readonly ThreadOrchestrationService _threadService;
     private readonly PendingMessageTracker _tracker;
 
-    public MailboxController(
+    public AgentsController(
         IAgentRepository agentRepo,
         IClaudeCodeRunner runner,
         ThreadOrchestrationService threadService,
@@ -128,9 +128,9 @@ public class MailboxController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // --- Requests (threads for an agent) ---
+    // --- Threads ---
 
-    public async Task<IActionResult> Requests(string id)
+    public async Task<IActionResult> Threads(string id)
     {
         var agent = await _agentRepo.GetAsync(id);
         if (agent == null)
@@ -158,7 +158,7 @@ public class MailboxController : Controller
             .OrderByDescending(t => t.LastActivity)
             .ToList();
 
-        return View(new RequestsViewModel
+        return View(new AgentThreadsViewModel
         {
             AgentId = id,
             AgentName = agent.DisplayName,
@@ -234,9 +234,9 @@ public class MailboxController : Controller
         return RedirectToAction(nameof(Thread), new { agentId, threadId });
     }
 
-    // --- All Messages ---
+    // --- Messages ---
 
-    public async Task<IActionResult> AllMessages()
+    public async Task<IActionResult> Messages()
     {
         var agents = await _agentRepo.GetAllAsync();
         var agentLookup = agents.ToDictionary(a => a.Id);
@@ -261,10 +261,10 @@ public class MailboxController : Controller
         }
 
         rows = rows.OrderByDescending(r => r.SentAtUtc).ToList();
-        return View(new AllMessagesViewModel { Messages = rows });
+        return View(new MessagesViewModel { Messages = rows });
     }
 
-    public async Task<IActionResult> ViewMessage(string agentId, string threadId, int messageNumber)
+    public async Task<IActionResult> Message(string agentId, string threadId, int messageNumber)
     {
         var agents = await _agentRepo.GetAllAsync();
         var agentLookup = agents.ToDictionary(a => a.Id);
@@ -280,7 +280,7 @@ public class MailboxController : Controller
             .FirstOrDefault(x => x.Direction == MessageDirection.Outbound && x.FromAgentId != null)
             ?.FromAgentId;
         var row = BuildMessageRow(m, agent, agentLookup, consultingAgentId);
-        return View(new ViewMessageViewModel
+        return View(new MessageDetailViewModel
         {
             AgentId = row.AgentId,
             ThreadId = row.ThreadId,
